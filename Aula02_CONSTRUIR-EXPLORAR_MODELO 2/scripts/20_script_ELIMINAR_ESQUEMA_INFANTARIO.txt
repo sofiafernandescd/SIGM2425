@@ -22,27 +22,17 @@
 -- Eliminar o Esquema Relacional
 --==============================
 ALTER TABLE Cliente
-DROP CONSTRAINT fk1_cliente_infantario
-;
-
+DROP CONSTRAINT fk1_cliente_infantario;
 
 ALTER TABLE Filho
-DROP CONSTRAINT fk1_filho_cliente
-;
+DROP CONSTRAINT fk1_filho_cliente;
+
+DROP TABLE Filho;
+
+DROP TABLE Cliente;
+
+DROP TABLE Infantario;
+
+DROP TABLE Freguesia;
 
 
-
-DROP TABLE Filho
-;
-
-
-DROP TABLE Cliente
-;
-
-
-DROP TABLE Infantario
-;
-
-
-DROP TABLE Freguesia
-;

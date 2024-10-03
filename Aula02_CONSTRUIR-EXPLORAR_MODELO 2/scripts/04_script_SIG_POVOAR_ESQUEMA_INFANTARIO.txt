@@ -80,6 +80,6 @@ VALUES ('Lumiar', ST_GeomFromText('POLYGON((10 10, 10 40, 20 30, 10 10))', 4326)
 -- 5.6
 UPDATE Freguesia 
 SET g_freguesia = ST_GeomFromText('POLYGON((9 9, 10 40, 25 30, 15 15, 9 9))', 4326) 
-WHERE nome = 'Lumiar1';	
+WHERE nome = 'Lumiar';	
 
 
