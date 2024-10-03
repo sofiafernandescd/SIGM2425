@@ -6,7 +6,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis
 ;
@@ -23,17 +23,7 @@
 --===============
 -- Eliminar Dados
 --===============
--- DELETE FROM <ER>
-;
-
--- DELETE FROM <ER>
-;
-
--- DELETE FROM <ER>
-;
-
--- DELETE FROM <ER>
-;
-
--- DELETE FROM <ER>
-;
+DELETE FROM Filho;
+DELETE FROM Cliente;
+DELETE FROM Infantario;
+DELETE FROM Freguesia;

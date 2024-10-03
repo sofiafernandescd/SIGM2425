@@ -22,7 +22,7 @@
 ALTER TABLE Cliente ADD COLUMN g_cliente GEOMETRY(Point, 4326);
 ALTER TABLE Infantario ADD COLUMN g_infantario geometry(Point, 4326);
 
-CREATE TABLE freguesias (
+CREATE TABLE Freguesia (
     nome VARCHAR(50) PRIMARY KEY,
     g_freguesia geometry(Polygon, 4326)
 );

@@ -6,7 +6,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis
 ;
@@ -21,56 +21,48 @@
 
 
 --================
--- Actualizar <ER>
+-- Actualizar Cliente (5.a)
 --================
 
--- UPDATE <ER>
--- SET ...
--- WHERE ...
-;
+UPDATE Cliente 
+SET g_cliente = ST_SetSRID(ST_MakePoint(10, 20), 4326) 
+WHERE id = 15; 
+  
 
+UPDATE Cliente 
+SET g_cliente = ST_SetSRID(ST_MakePoint(30, 20), 4326) 
+WHERE id = 2; 
+  
 
--- UPDATE <ER>
--- SET ...
--- WHERE ...
-;
-
-
--- UPDATE <ER>
--- SET ...
--- WHERE ...
-;
+UPDATE Cliente 
+SET g_cliente = ST_SetSRID(ST_MakePoint(30, 40), 4326) 
+WHERE id = 333;
 
 
 
 
 --================
--- Actualizar <ER>
+-- Actualizar Infantario (5.b)
 --================
 
--- UPDATE <ER>
--- SET ...
--- WHERE ...
-;
+UPDATE Infantario 
+SET g_infantario = ST_SetSRID(ST_MakePoint(40, 10), 4326) 
+WHERE nome = 'Fraldas'; 
 
-
--- UPDATE <ER>
--- SET ...
--- WHERE ...
-;
-
-
--- UPDATE <ER>
--- SET ...
--- WHERE ...
-;
+  
+UPDATE Infantario 
+SET g_infantario = ST_SetSRID(ST_MakePoint(20, 30), 4326) 
+WHERE nome = 'Ursinho';	
 
 
 
 
 --============
--- Povoar <ER>
+-- Povoar Freguesia (5.c)
 --============
+
+INSERT INTO Freguesia (nome, g_freguesia) 
+VALUES ('Lumiar', ST_GeomFromText('POLYGON((10 10, 10 40, 20 30, 10 10))', 4326));
 
 -- DELETE FROM <ER>
 ;
@@ -85,6 +77,9 @@
 -- VALUES ...
 ;
 
-
+-- 5.6
+UPDATE Freguesia 
+SET g_freguesia = ST_GeomFromText('POLYGON((9 9, 10 40, 25 30, 15 15, 9 9))', 4326) 
+WHERE nome = 'Lumiar1';	
 
 

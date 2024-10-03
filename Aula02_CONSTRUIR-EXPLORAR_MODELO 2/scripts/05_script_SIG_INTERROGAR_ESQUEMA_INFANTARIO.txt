@@ -6,7 +6,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis
 ;
@@ -18,7 +18,7 @@
 --==========================
 
 
--- mais informação sobre "client_encoding" em:
+-- mais informaï¿½ï¿½o sobre "client_encoding" em:
 -- http://www.postgresql.org/docs/9.4/static/multibyte.html
 \encoding WIN1250
 ;
@@ -30,15 +30,15 @@
 -- Interrogar CLIENTE
 --===================
 
--- Ponto geografico de cada cliente
+-- Ponto geografico de cada cliente (6.a)
 
--- SELECT ...
+SELECT ST_AsText(g_cliente) FROM Cliente
 ;
 
 
--- cada uma das coordenadas (ordenadas e abcissa) do ponto geográfico de cada cliente
+-- cada uma das coordenadas (ordenadas e abcissa) do ponto geogrï¿½fico de cada cliente (6.b)
 
--- SELECT ...
+SELECT ST_X(g_cliente) AS abcissa, ST_Y(geometry) AS ordenada FROM Cliente
 ;
 
 
@@ -48,13 +48,13 @@
 -- Interrogar FREGUESIA
 --=====================
 
--- Espaço geografico delimitado por cada freguesia
+-- Espaï¿½o geografico delimitado por cada freguesia (6.c)
 
--- SELECT ...
+SELECT ST_AsText(g_freguesia), ST_AREA(g_freguesia) FROM Freguesia
 ;
 
 
--- Área ocupada por cada freguesia
+-- ï¿½rea ocupada por cada freguesia
 
 -- SELECT ...
 ;
@@ -66,21 +66,43 @@
 -- Interrogar INFANTARIO e FREGUESIA
 --==================================
 
--- Infantários (nome e geometria) de cada freguesia (nome e geometria)
--- considerando apenas operações espaciais
+-- Infantï¿½rios (nome e geometria) de cada freguesia (nome e geometria)
+-- considerando apenas operaï¿½ï¿½es espaciais
 
--- SELECT ...
-;
+SELECT 
+    i.nome AS nome_infantario,
+    ST_AsText(i.g_infantario) AS geometria_infantario,
+    f.nome AS nome_freguesia,
+    ST_AsText(f.g_freguesia) AS geometria_freguesia
+FROM 
+    Infantario i
+JOIN 
+    Freguesia f ON ST_Intersects(i.g_infantario, f.g_freguesia);
 
 
--- Distância de cada cliente a cada infantário indicando o seu nome próprio e de família
+-- Distï¿½ncia de cada cliente a cada infantï¿½rio indicando o seu nome prï¿½prio e de famï¿½lia
 
--- SELECT ...
-;
+SELECT 
+    c.nome,
+    c.apelido,
+    i.nome AS nome_infantario,
+    ST_Distance(c.g_cliente, i.g_infantario) AS distancia
+FROM 
+    cliente c
+CROSS JOIN 
+    infantario i;
 
 
--- nome do infantário e num único campo o nome próprio e de família dos clientes
--- que vivem a uma distância superior a 20 (unidades) de algum infantário
+-- nome do infantï¿½rio e num ï¿½nico campo o nome prï¿½prio e de famï¿½lia dos clientes
+-- que vivem a uma distï¿½ncia superior a 20 (unidades) de algum infantï¿½rio
 
--- SELECT ...
-;
+SELECT 
+    i.nome AS nome_infantario,
+    CONCAT(c.nome, ' ', c.apelido) AS nome_completo_cliente
+    --TEXTCAT(c.nome, c.apelido) --DÃ¡ erro com o espaÃ§o
+FROM 
+    cliente c
+CROSS JOIN
+    infantario i
+WHERE 
+    ST_Distance(c.g_cliente, i.g_infantario) > 20;
