@@ -34,5 +34,3 @@ DROP TABLE Cliente;
 DROP TABLE Infantario;
 
 DROP TABLE Freguesia;
-
-
