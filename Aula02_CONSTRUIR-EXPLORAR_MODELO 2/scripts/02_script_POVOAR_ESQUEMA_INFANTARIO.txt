@@ -6,7 +6,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis
 ;
@@ -21,6 +21,55 @@
 
 
 
+--- Infantario
+--=============================
+INSERT INTO Infantario(id, nome) 
+VALUES(1, 'Fraldas') 
+; 
+ 
+INSERT INTO Infantario(id, nome) 
+VALUES(2, 'Ursinho') 
+; 
+
+
+
+
+-- Cliente
+--=============================
+INSERT INTO Cliente(id, n_bi, nome, apelido, infantario) 
+VALUES(15, 83838383, 'Joana', 'Vilhena', 'Fraldas') 
+; 
+INSERT INTO Cliente(id, n_bi, nome, apelido, infantario) 
+VALUES(2, 11111111, 'Pedro', 'Silva', 'Ursinho') 
+; 
+INSERT INTO Cliente(id, n_bi, nome, apelido, infantario) 
+VALUES(333, 55555555, 'Miguel', 'Mendes', 'Ursinho') 
+;
+
+
+
+
+-- Filho
+--=============================
+INSERT INTO Filho(id, nome, data_nascimento) 
+VALUES(15, 'Marcelo Vilhena', TO_DATE('17/12/2020', 'DD/MM/YYYY')) 
+; 
+ 
+INSERT INTO Filho(id, nome, data_nascimento) 
+VALUES(15, 'Martim Vilhena', TO_DATE('17/11/2015', 'DD/MM/YYYY')) 
+; 
+ 
+INSERT INTO Filho(id, nome, data_nascimento) 
+VALUES(2, 'Mariana Silva', TO_DATE('18/12/2019', 'DD/MM/YYYY')) 
+; 
+ 
+INSERT INTO Filho(id, nome, data_nascimento) 
+VALUES(333, 'Raquel Mendes', TO_DATE('17/12/2007', 'DD/MM/YYYY')) 
+; 
+
+
+
+
 -- <ER>
 --=============================
 -- INSERT INTO <ER>( ...
@@ -32,51 +81,3 @@
 ;
 
 -- ...
-
-
-
-
--- <ER>
---=============================
--- INSERT INTO <ER>( ...
--- VALUES( ...
-;
-
--- INSERT INTO <ER>( ...
--- VALUES( ...
-;
-
--- ...
-
-
-
-
--- <ER>
---=============================
--- INSERT INTO <ER>( ...
--- VALUES( ...
-;
-
--- INSERT INTO <ER>( ...
--- VALUES( ...
-;
-
--- ...
-
-
-
-
--- <ER>
---=============================
--- INSERT INTO <ER>( ...
--- VALUES( ...
-;
-
--- INSERT INTO <ER>( ...
--- VALUES( ...
-;
-
--- ...
-
-
-

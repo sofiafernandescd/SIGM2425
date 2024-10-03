@@ -6,7 +6,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis
 ;
@@ -19,7 +19,13 @@
 --==========================
 
 
+ALTER TABLE Cliente ADD COLUMN g_cliente GEOMETRY(Point, 4326);
+ALTER TABLE Infantario ADD COLUMN g_infantario geometry(Point, 4326);
 
+CREATE TABLE freguesias (
+    nome VARCHAR(50) PRIMARY KEY,
+    g_freguesia geometry(Polygon, 4326)
+);
 
 ----------------------------------------------
 -- Criar Esquemas de Relacao

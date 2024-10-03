@@ -3,7 +3,7 @@
 --# OCT.2016
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis
 ;
@@ -20,6 +20,9 @@
 --==========================
 
 
+DROP TABLE IF EXISTS Cliente CASCADE;
+DROP TABLE IF EXISTS Filho CASCADE;
+DROP TABLE IF EXISTS Infantario CASCADE;
 
 
 ----------------------------------------------
@@ -28,32 +31,33 @@
 ----------------------------------------------
 
 -- Esquema de Relacao <ER>
--- CREATE TABLE <ER>
+CREATE TABLE Cliente (
+    id int NOT NULL,
+    n_bi int NOT NULL,
+    nome VARCHAR(20),
+    apelido VARCHAR(20),
+	infantario VARCHAR(20) NOT NULL
+
+)
 
 
 ;
 -- Esquema de Relacao <ER>
--- CREATE TABLE <ER>
+CREATE TABLE Filho (
+	id int NOT NULL,
+    nome VARCHAR(20) NOT NULL,
+    data_nascimento date
+)
 
 
 ;
 -- Esquema de Relacao <ER>
--- CREATE TABLE <ER>
+CREATE TABLE Infantario (
+	id int UNIQUE NOT NULL,
+    nome VARCHAR(20) UNIQUE NOT NULL
+    
+)
 ;
-
-
--- Esquema de Relacao <ER>
--- CREATE TABLE <ER>
-;
-
-
--- Esquema de Relacao <ER>
--- CREATE TABLE <ER>
-;
-
--- ...
-
-
 
 
 ---------------------------------------------
@@ -96,85 +100,62 @@
 -- Criar as Restricoes de Integridade de Entidade
 -------------------------------------------------
 
--- <ER>
+-- Cliente
 --========
--- ALTER TABLE <ER>
--- ADD CONSTRAINT pk_<ER>
---    PRIMARY KEY( ...
-;
+ALTER TABLE Cliente 
+ADD CONSTRAINT pk_cliente 
+   PRIMARY KEY(id) 
+; 
+ 
+ALTER TABLE Cliente 
+ADD CONSTRAINT ak1_cliente_id 
+   UNIQUE(id) 
+; 
 
--- ALTER TABLE <ER>
--- ADD CONSTRAINT ak1_<ER>
---    UNIQUE( ...
-;
-
-
--- <ER>
+-- Filho
 --========
--- ALTER TABLE <ER>
--- ADD CONSTRAINT pk_<ER>
---    PRIMARY KEY( ...
-;
-
--- ALTER TABLE <ER>
--- ADD CONSTRAINT ak1_<ER>
---    UNIQUE( ...
-;
-
-
--- <ER>
+ALTER TABLE Filho 
+ADD CONSTRAINT pk_filho 
+   PRIMARY KEY(nome) 
+; 
+ 
+ALTER TABLE Filho 
+ADD CONSTRAINT ak1_filho_id 
+   UNIQUE(nome) 
+; 
+ 
+-- Infantario
 --========
--- ALTER TABLE <ER>
--- ADD CONSTRAINT pk_<ER>
---    PRIMARY KEY( ...
-;
-
--- ALTER TABLE <ER>
--- ADD CONSTRAINT ak1_<ER>
---    UNIQUE( ...
-;
-
-
--- ...
-
-
+ALTER TABLE Infantario 
+ADD CONSTRAINT pk_infantario 
+   PRIMARY KEY(id) 
+; 
+ 
+ALTER TABLE Infantario 
+ADD CONSTRAINT ak1_infantario_nome 
+   UNIQUE(id) 
+; 
 
 
 -------------------------------------------------
 -- Criar as Restricoes de Integridade Referencial
 -------------------------------------------------
 
--- <ER>
+-- Filho
 --========
--- ALTER TABLE <ER>
--- ADD CONSTRAINT fk1_<ER>
---    FOREIGN KEY( ...
---    REFERENCES ...
---    ON DELETE ...
-;
+ALTER TABLE Filho 
+ADD CONSTRAINT fk1_filho_cliente 
+   FOREIGN KEY(id) 
+   REFERENCES Cliente (id) 
+   ON DELETE CASCADE; 
+; 
 
-
--- <ER>
+ 
+-- Cliente
 --========
--- ALTER TABLE <ER>
--- ADD CONSTRAINT fk1_<ER>
---    FOREIGN KEY( ...
---    REFERENCES ...
---    ON DELETE ...
-;
-
-
--- <ER>
---========
--- ALTER TABLE <ER>
--- ADD CONSTRAINT fk1_<ER>
---    FOREIGN KEY( ...
---    REFERENCES ...
---    ON DELETE ...
-
-
--- ...
-
-
-
-
+ALTER TABLE Cliente 
+ADD CONSTRAINT fk1_cliente_infantario 
+   FOREIGN KEY(infantario) 
+   REFERENCES Infantario(nome) 
+   ON DELETE CASCADE; 
+; 
