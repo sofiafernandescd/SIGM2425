@@ -1,0 +1,125 @@
+--#############
+--# Paulo Trigo
+--#############
+
+
+
+--=============
+-- Liga��o � BD
+--=============
+\set dataBase my_gis_gps
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+
+
+-- Eliminar Dados (anteriores)
+--=============================
+DELETE FROM gps_ponto;
+DELETE FROM TERRENO;
+DELETE FROM TIPO_TERRENO;
+---------------------------------
+
+
+----------------------------
+-- Povoar Dados
+----------------------------
+-- TIPO_TERRENO
+----------------------------
+
+INSERT INTO tipo_terreno( id, tipo )VALUES (1, 'Lago');
+INSERT INTO tipo_terreno( id, tipo )VALUES (2, 'Floresta');
+INSERT INTO tipo_terreno( id, tipo )VALUES (3, 'Pântano');
+INSERT INTO tipo_terreno( id, tipo )VALUES (4, 'Savana');
+
+--INSERT INTO tipo_terreno( id_tipo_terreno )
+--
+--);
+
+--INSERT INTO tipo_terreno( id_tipo_terreno )
+--
+--);
+
+
+
+----------------------------
+-- TERRENO
+----------------------------
+INSERT INTO terreno (id, tipo) VALUES (1, 'Lago');
+INSERT INTO terreno (id, tipo) VALUES (2, 'Lago');
+INSERT INTO terreno (id, tipo) VALUES (3, 'Floresta');
+
+--INSERT INTO terreno( id_terreno, id_tipo_terreno )
+--
+--);
+
+--INSERT INTO terreno( id_terreno, id_tipo_terreno )
+--
+--);
+
+--INSERT INTO terreno( id_terreno, id_tipo_terreno )
+--
+--);
+
+
+
+----------------------------
+-- GPS_PONTO
+----------------------------
+
+INSERT INTO public.gps_ponto VALUES (1, 1, '0101000020E610000000000000000000000000000000000000');
+INSERT INTO public.gps_ponto VALUES (2, 2, '0101000020E6100000E454062D4001F0BFDD659B343DB3E93F');
+INSERT INTO public.gps_ponto VALUES (3, 3, '0101000020E6100000D0E0CCE9D31BC4BFE03D9BFA2E15C33F');
+INSERT INTO public.gps_ponto VALUES (4, 4, '0101000020E6100000ACD24BE2F370D1BFD806DB6ADBFBCE3F');
+INSERT INTO public.gps_ponto VALUES (5, 5, '0101000020E610000028A4E45946F4E1BF8EB7FC3DD508DD3F');
+
+
+-- INSERT INTO gps_ponto( 
+--
+--);
+
+
+
+
+
+----------------------------
+-- GPS_PONTO
+----------------------------
+--================================================================================================
+-- >> IMPORTANTE:
+-- >> DESCOMEMNTAR A PROXIMA LINHA NA RESPOSTA A QUESTAO 3 DO GUIAO DA AULA PRATICA
+-- >> (o QuantumGIS apenas regista o layer se ele tiver pelo menos 1 geometria)
+--================================================================================================
+-- INSERT INTO gps_ponto VALUES (1, 1,  ST_MakePoint( 0, 0 ) );
+
+
+
+
+--================================================================================================
+-- >> IMPORTANTE:
+-- >> AS PROXIMAS LINHAS SAO PARA COMPLETAR NA RESPOSTA AS QUESTOES 5 E 6 DO GUIAO DA AULA PRATICA
+--================================================================================================
+-- 1. Os pontos foram editados no QuantumGis e depois gravados no PostGis
+-- 2. Os INSERT foram gerado em:
+-- pgAdmin III \ Tools \ Backup \ com a configuracao:
+-- | File Options | Format: PLAIN"
+-- | Dump Options #1 | Only Data; Use Insert Commands
+-- INSERT INTO gps_ponto VALUES (1, 1, 
+
+
+-- 1. Os pontos foram editados no QuantumGis e depois gravados no PostGis
+-- 2. Os INSERT foram gerado em:
+-- pgAdmin III \ Tools \ Query Tool \ com a interrogacao:
+-- SELECT ST_AsText(g_ponto) FROM gps_ponto;
+-- e depois executando essa interrogacao para um ficheiro (em Query \ Execute to file)
+-- por fim substituindo no ficheiro gerado POINT por ST_MakePoint
+-- INSERT INTO gps_ponto VALUES (1, 1,  ST_MakePoint(
+
+
+
+
