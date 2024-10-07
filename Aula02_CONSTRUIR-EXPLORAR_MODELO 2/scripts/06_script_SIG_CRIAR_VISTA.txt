@@ -76,10 +76,11 @@ LEFT JOIN Freguesia fc ON ST_Contains(fc.g_freguesia, c.g_cliente)
 LEFT JOIN Freguesia fi ON ST_Contains(fi.g_freguesia, i.g_infantario);
 
 -- view com o infantario mais proximo
+DROP VIEW IF EXISTS v_infantario_dists;
 CREATE VIEW v_infantario_dists AS
 SELECT
     c.nome AS nome_cliente,
-	c.infantario AS infantario_cliente,
+	--c.infantario AS infantario_cliente,
     i.nome AS nome_infantario,
     COALESCE(fc.nome, 'Sem Freguesia') AS freguesia_cliente,
     COALESCE(fi.nome, 'Sem Freguesia') AS freguesia_infantario,
@@ -92,14 +93,14 @@ SELECT
             SELECT MIN(ST_Distance(c.g_cliente, i2.g_infantario))
             FROM Infantario i2
         )
-        LIMIT 1
-    ) AS infantario_mais_proximo
+        LIMIT 1 
+    ) AS infantario_mais_proximo  -- nome do infantario mais prox.
 FROM
     Cliente c
     CROSS JOIN Infantario i
-	LEFT JOIN Freguesia fc ON ST_Contains(fc.g_freguesia, c.g_cliente)
-	LEFT JOIN Freguesia fi ON ST_Contains(fi.g_freguesia, i.g_infantario)
-GROUP BY c.nome, c.id, i.nome, fc.nome, fi.nome, i.g_infantario;
+	LEFT JOIN Freguesia fc ON ST_Contains(fc.g_freguesia, c.g_cliente) -- freguesia do cliente
+	LEFT JOIN Freguesia fi ON ST_Contains(fi.g_freguesia, i.g_infantario) -- freguesia do infantario
+GROUP BY c.nome, c.id, i.nome, fc.nome, fi.nome, i.g_infantario;  
 
 --7.b
 
@@ -108,7 +109,7 @@ DROP VIEW IF EXISTS v_inf_frg
 
 CREATE VIEW v_inf_frg AS
 SELECT * FROM v_infantario_dists AS vid
-WHERE vid.infantario_cliente != vid.infantario_mais_proximo;
+WHERE vid.nome_infantario = vid.infantario_mais_proximo AND vid.freguesia_cliente != vid.freguesia_infantario;
 
 
 
@@ -124,4 +125,14 @@ WHERE vid.infantario_cliente != vid.infantario_mais_proximo;
 
 
 
+
+SELECT
+c.nome AS nome_cliente,
+i.nome AS nome_infantario,
+ST_Distance(c.g_cliente, i.g_infantario) AS distancia
+FROM
+Cliente AS c,
+Infantario AS i
+WHERE c.infantario = 'Ursinho';
+--WHERE distancia < 100;
 
