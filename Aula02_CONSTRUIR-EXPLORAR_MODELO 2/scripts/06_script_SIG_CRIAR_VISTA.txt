@@ -39,12 +39,64 @@
 -- 7.a vista v_cli_frg que apresenta “os clientes com filhos em idade escolar que residem até 100m dos infantários da freguesia mais lucrativa”
 
 DROP VIEW IF EXISTS v_filhos_i_escolar;
-
 CREATE VIEW v_filhos_i_escolar AS 
-SELECT * FROM Filho
-WHERE data_nascimento BETWEEN TO_DATE('01/01/2001', 'DD/MM/YYYY') AND TO_DATE('31/12/2019', 'DD/MM/YYYY');
+SELECT
+    f.id,
+    f.nome AS nome_filho,
+    f.data_nascimento,
+    c.id AS id_cliente,
+    c.nome || ' ' || c.apelido AS nome_cliente
+FROM
+    Filho f
+INNER JOIN Cliente c ON f.id = c.id
+WHERE
+    f.data_nascimento BETWEEN TO_DATE('01/01/2001', 'DD/MM/YYYY') AND TO_DATE('31/12/2019', 'DD/MM/YYYY');
+
+DROP VIEW IF EXISTS v_dist_menor_que_100;
+CREATE VIEW v_dist_menor_que_100 AS
+SELECT 
+    c.nome AS nome_cliente,
+    i.nome AS nome_infantario,
+    ST_Distance(c.g_cliente, i.g_infantario) AS distancia
+FROM 
+    Cliente c
+JOIN Infantario i ON ST_DWithin(c.g_cliente, i.g_infantario, 100)
+WHERE ST_Distance(c.g_cliente, i.g_infantario) = (
+    SELECT MIN(ST_Distance(c.g_cliente, i2.g_infantario))
+    FROM Infantario i2
+);
+
+DROP VIEW IF EXISTS v_freguesia_lucrativa;
+CREATE VIEW v_freguesia_lucrativa AS --baseado no numero de clientes dos infantarios da freguesia 
+SELECT
+    fi.nome AS freguesia_nome,
+    COUNT(c.id) AS cliente_count
+FROM 
+    Infantario i
+LEFT JOIN Cliente c ON i.nome = c.infantario
+LEFT JOIN Freguesia fi ON ST_Contains(fi.g_freguesia, i.g_infantario)
+GROUP BY fi.nome
+ORDER BY cliente_count DESC
+LIMIT 1
 
 DROP VIEW IF EXISTS v_cli_frg;
+CREATE VIEW v_cli_frg AS
+SELECT
+  DISTINCT c.nome || ' ' || c.apelido AS nome_cliente,
+  f.nome AS nome_filho,
+  f.data_nascimento,
+  i.nome AS nome_infantario,
+  di.distancia AS distancia
+FROM
+  Cliente c
+INNER JOIN Filho f ON c.id = f.id
+INNER JOIN v_dist_menor_que_100 di ON c.nome = di.nome_cliente  -- Using data from v_dist_menor_que_100
+INNER JOIN Infantario i ON di.nome_infantario = i.nome
+LEFT JOIN Freguesia fi ON ST_Contains(fi.g_freguesia, i.g_infantario)
+WHERE
+  f.data_nascimento BETWEEN TO_DATE('01/01/2001', 'DD/MM/YYYY') AND TO_DATE('31/12/2019', 'DD/MM/YYYY')  -- School-age children
+  AND fi.nome = (SELECT freguesia_nome FROM v_freguesia_lucrativa);  -- Using data from v_freguesia_lucrativa
+
 
 -- CREATE VIEW v_cli_frg()
 -- AS
@@ -104,12 +156,12 @@ GROUP BY c.nome, c.id, i.nome, fc.nome, fi.nome, i.g_infantario;
 
 --7.b
 
-DROP VIEW IF EXISTS v_inf_frg
-;
+DROP VIEW IF EXISTS v_inf_frg;
 
 CREATE VIEW v_inf_frg AS
 SELECT * FROM v_infantario_dists AS vid
-WHERE vid.nome_infantario = vid.infantario_mais_proximo AND vid.freguesia_cliente != vid.freguesia_infantario;
+WHERE vid.nome_infantario = vid.infantario_mais_proximo 
+AND vid.freguesia_cliente != vid.freguesia_infantario;
 
 
 
