@@ -37,6 +37,10 @@ CREATE TABLE tipo_terreno (
     tipo VARCHAR(50) UNIQUE NOT NULL
 );
 
+-- b04
+CREATE TABLE tipo_terreno( 
+    id_tipo_terreno VARCHAR PRIMARY KEY
+);
 
 ---------------------------------
 -- TERRENO
@@ -48,13 +52,32 @@ CREATE TABLE terreno (
     FOREIGN KEY (tipo) REFERENCES tipo_terreno(tipo)
 );
 
+--b04
 
+CREATE TABLE terreno (
+    id_terreno INTEGER PRIMARY KEY,
+    id_tipo_terreno VARCHAR,
+    CONSTRAINT fk1 FOREIGN KEY(id_tipo_terreno) REFERENCES tipo_terreno(id_tipo_terreno)
+);
+
+SELECT AddGeometryColumn('', 'terreno, 'g_terreno', -1, 'POLYGON', 2);
 
 ---------------------------------
 -- GPS_PONTO
 ---------------------------------
 CREATE TABLE gps_ponto (
-    id1 INT PRIMARY KEY,
-    id2 INT,
+    id_ordem INT PRIMARY KEY,
+    id_terreno INT FOREIGN KEY REFERENCES terreno (id),
     ponto GEOMETRY(Point,4326) -- 4326 é um SRID comum para coordenadas geográficas
 ); -- WITH OIDS;
+
+--b04
+
+CREATE TABLE gps_ponto(
+    id_ordem INTEGER,
+    id_terreno INTEGER,
+    CONSTRAINT pk_gps_ponto PRIMARY KEY(id_ordem, id_terreno),
+    CONSTRAINT fk1 FOREIGN KEY(id_terreno) REFERENCES terreno(id_terreno)
+); -- WITH OIDS;
+
+SELECT AddGeometryColumn('', 'gps_ponto', 'g_ponto', -1, 'POINT', 2);

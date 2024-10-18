@@ -1,0 +1,42 @@
+CREATE VIEW v_filhos_i_escolar AS 
+SELECT * FROM Filho
+WHERE data_nascimento BETWEEN TO_DATE('01/01/2001', 'DD/MM/YYYY') AND TO_DATE('31/12/2019', 'DD/MM/YYYY');
+
+--CREATE VIEW v_dist_cliente_infantario AS
+SELECT 
+    c.nome AS nome_cliente,
+    i.nome AS nome_infantario,
+    ST_Distance(c.g_cliente, i.g_infantario) AS distancia
+FROM 
+    Cliente c
+JOIN Infantario i ON ST_DWithin(c.g_cliente, i.g_infantario, 100)
+WHERE ST_Distance(c.g_cliente, i.g_infantario) = (
+    SELECT MIN(ST_Distance(c.g_cliente, i2.g_infantario))
+    FROM Infantario i2
+);
+
+CREATE VIEW v_teste(nome_cliente) AS
+SELECT
+c.nome AS nome_cliente,
+i.nome AS nome_infantario,
+ST_Distance(c.g_cliente, i.g_infantario) AS distancia
+FROM
+Cliente AS c,
+Infantario AS i
+WHERE c.infantario = 'Ursinho';
+--WHERE distancia < 100;
+SELECT * FROM v_teste;
+
+CREATE VIEW v_distancias AS
+SELECT
+    c.nome AS nome_cliente,
+	c.infantario AS infantario_cliente,
+    i.nome AS nome_infantario,
+    COALESCE(fc.nome, 'Sem Freguesia') AS freguesia_cliente,
+    COALESCE(fi.nome, 'Sem Freguesia') AS freguesia_infantario,
+    ST_Distance(c.g_cliente, i.g_infantario) AS distancia
+FROM 
+    Cliente c
+CROSS JOIN Infantario i
+LEFT JOIN Freguesia fc ON ST_Contains(fc.g_freguesia, c.g_cliente)
+LEFT JOIN Freguesia fi ON ST_Contains(fi.g_freguesia, i.g_infantario);

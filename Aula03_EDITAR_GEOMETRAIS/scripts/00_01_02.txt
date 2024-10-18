@@ -1,0 +1,135 @@
+-----------------------------
+-- Delete all data to restart (if needed)
+-----------------------------
+DELETE FROM gps_ponto;
+DELETE FROM terreno;
+DELETE FROM tipo_terreno;
+
+DROP TABLE IF EXISTS gps_ponto;
+DROP TABLE IF EXISTS terreno;
+DROP TABLE IF EXISTS tipo_terreno;
+
+DROP DATABASE IF EXISTS my_gis_gps;
+
+----------------------------
+-- Create database (from b04)
+-----------------------------
+
+-- CREATE DATABASE my_gis_gps; -- This command needs to be done on PSQL
+
+-----------------------------
+-- Paste the following code in the Query Tool
+-----------------------------
+
+CREATE EXTENSION postgis;
+
+
+CREATE TABLE tipo_terreno( 
+    id_tipo_terreno VARCHAR PRIMARY KEY
+);
+
+CREATE TABLE terreno (
+    id_terreno INTEGER PRIMARY KEY,
+    id_tipo_terreno VARCHAR,
+    CONSTRAINT fk1 FOREIGN KEY(id_tipo_terreno) REFERENCES tipo_terreno(id_tipo_terreno)
+);
+
+SELECT AddGeometryColumn('', 'terreno', 'g_terreno', -1, 'POLYGON', 2);
+
+CREATE TABLE gps_ponto(
+    id_ordem INTEGER,
+    id_terreno INTEGER,
+    CONSTRAINT pk_gps_ponto PRIMARY KEY(id_ordem, id_terreno),
+    CONSTRAINT fk1 FOREIGN KEY(id_terreno) REFERENCES terreno(id_terreno)
+); -- WITH OIDS;
+
+SELECT AddGeometryColumn('', 'gps_ponto', 'g_ponto', -1, 'POINT', 2);
+
+
+
+-- 6.c)
+-- SELECT ST_AsText(ponto) FROM gps_ponto;
+
+----------------------------
+-- Povoar Dados
+----------------------------
+-- TIPO_TERRENO
+----------------------------
+
+INSERT INTO tipo_terreno( id_tipo_terreno )VALUES ('Lago');
+INSERT INTO tipo_terreno( id_tipo_terreno )VALUES ('Floresta');
+INSERT INTO tipo_terreno( id_tipo_terreno )VALUES ('Pantano');
+INSERT INTO tipo_terreno( id_tipo_terreno )VALUES ('Savana');
+
+----------------------------
+-- TERRENO
+----------------------------
+INSERT INTO terreno (id_terreno, id_tipo_terreno) VALUES (1, 'Lago');
+INSERT INTO terreno (id_terreno, id_tipo_terreno) VALUES (2, 'Lago');
+INSERT INTO terreno (id_terreno, id_tipo_terreno) VALUES (3, 'Floresta');
+
+
+----------------------------
+-- GPS_PONTO
+----------------------------
+--================================================================================================
+-- >> IMPORTANTE:
+-- >> DESCOMEMNTAR A PROXIMA LINHA NA RESPOSTA A QUESTAO 3 DO GUIAO DA AULA PRATICA
+-- >> (o QuantumGIS apenas regista o layer se ele tiver pelo menos 1 geometria)
+--================================================================================================
+INSERT INTO gps_ponto VALUES (1, 1,  ST_MakePoint( 0, 0 ) );
+
+
+
+
+--================================================================================================
+-- >> IMPORTANTE:
+-- >> AS PROXIMAS LINHAS SAO PARA COMPLETAR NA RESPOSTA AS QUESTOES 5 E 6 DO GUIAO DA AULA PRATICA
+--================================================================================================
+-- 1. Os pontos foram editados no QuantumGis e depois gravados no PostGis
+-- 2. Os INSERT foram gerado em:
+-- pgAdmin III \ Tools \ Backup \ com a configuracao:
+-- | File Options | Format: PLAIN"
+-- | Dump Options #1 | Only Data; Use Insert Commands
+-- INSERT INTO gps_ponto VALUES (1, 1, 
+
+-- 5.d)
+
+
+
+-- 1. Os pontos foram editados no QuantumGis e depois gravados no PostGis
+-- 2. Os INSERT foram gerado em:
+-- pgAdmin III \ Tools \ Query Tool \ com a interrogacao:
+-- SELECT ST_AsText(g_ponto) FROM gps_ponto;
+-- e depois executando essa interrogacao para um ficheiro (em Query \ Execute to file)
+-- por fim substituindo no ficheiro gerado POINT por ST_MakePoint
+-- INSERT INTO gps_ponto VALUES (1, 1,  ST_MakePoint(...);
+
+--5.e)
+
+-- Assuming the center is (-0.3, 0.3) and radius is 0.5
+--DELETE FROM gps_ponto;
+
+INSERT INTO gps_ponto VALUES (1, 1,  ST_MakePoint( 0, 0 ) );
+
+INSERT INTO gps_ponto VALUES (2, 3,  ST_MakePoint(-1.00030534351145, 0.803129770992367));
+INSERT INTO gps_ponto VALUES (3, 3,  ST_MakePoint(-0.157099236641221, 0.149083969465649));
+INSERT INTO gps_ponto VALUES (4, 2,  ST_MakePoint(-0.272519083969466, 0.24206106870229));
+INSERT INTO gps_ponto VALUES (5, 2,  ST_MakePoint(-0.561068702290076, 0.453664122137405));
+
+
+INSERT INTO gps_ponto (id_ordem, id_terreno, g_ponto)
+VALUES
+  (6, 1, ST_MakePoint(-0.3 + 0.5 * cos(radians(0)), 0.3 + 0.5 * sin(radians(0)))),
+  (7, 1, ST_MakePoint(-0.3 + 0.5 * cos(radians(45)), 0.3 + 0.5 * sin(radians(45)))),
+  (8, 1, ST_MakePoint(-0.3 + 0.5 * cos(radians(90)), 0.3 + 0.5 * sin(radians(90)))),
+  (9, 1, ST_MakePoint(-0.3 + 0.5 * cos(radians(135)), 0.3 + 0.5 * sin(radians(135)))),
+  (10, 1, ST_MakePoint(-0.3 + 0.5 * cos(radians(180)), 0.3 + 0.5 * sin(radians(180)))),
+  (11, 1, ST_MakePoint(-0.3 + 0.5 * cos(radians(225)), 0.3 + 0.5 * sin(radians(225)))),
+  (12, 1, ST_MakePoint(-0.3 + 0.5 * cos(radians(270)), 0.3 + 0.5 * sin(radians(270)))),
+  (13, 2, ST_MakePoint(-0.3 + 0.5 * cos(radians(315)), 0.3 + 0.5 * sin(radians(315))));
+
+-- Para cruzar
+INSERT INTO gps_ponto (id_ordem, id_terreno, g_ponto)
+VALUES
+  (14, 1, ST_MakePoint(-0.3 + 0.7 * cos(radians(45)), 0.3 + 0.7 * sin(radians(45))));
