@@ -26,7 +26,6 @@ DROP VIEW IF EXISTS V_LINHA_CONTORNO;
 --------------------------------
 
 
-
 ----------------------------
 -- VIEW V_LINHA_CONTORNO
 -- (a partir de GPS_PONTO)
@@ -40,7 +39,6 @@ GROUP BY id_terreno;
 SELECT * FROM V_LINHA_CONTORNO;
 
 
-
 ----------------------------
 -- TAUX_LINHA_CONTORNO
 -- (apenas para usar apresentar no QGIS)
@@ -50,9 +48,7 @@ CREATE TABLE TAUX_LINHA_CONTORNO ( id SERIAL PRIMARY KEY );
 SELECT AddGeometryColumn('', 'taux_linha_contorno', 'g_linha', 0, 'LINESTRING', 2 );
 
 INSERT INTO TAUX_LINHA_CONTORNO( g_linha )
-SELECT g_linha
-FROM V_LINHA_CONTORNO;
-
+SELECT g_linha FROM V_LINHA_CONTORNO;
 
 
 ----------------------------
@@ -100,37 +96,17 @@ SELECT ST_GeometryN( g_linha,
                      generate_series( 1, ST_NumGeometries( g_linha ) ) ) AS g_linha
 FROM V_LINHA_EXTREMO_COINCIDENTE;
 
---SELECT
---( CASE WHEN x % 2 = 0
---  THEN 'PAR'
---  ELSE 'IMPAR'
---  END )
---FROM generate_series( 1, 10 ) AS x
+SELECT
+( CASE WHEN x % 2 = 0
+  THEN 'PAR'
+  ELSE 'IMPAR'
+  END )
+FROM generate_series( 1, 10 ) AS x
 
 
---INSERT INTO T_PONTO_FRONTEIRA( g_multi_ponto )
---SELECT
+INSERT INTO T_PONTO_FRONTEIRA (g_multi_ponto)
+SELECT ST_Boundary(ST_GeometryN(g_linha, i)) AS g_multi_ponto
+FROM V_LINHA_EXTREMO_COINCIDENTE, 
+     generate_series(1, ST_NumGeometries(g_linha)) AS i
+WHERE NOT ST_IsEmpty(ST_Boundary(ST_GeometryN(g_linha, i)));
 
--- b04
-DROP TABLE IF EXISTS T_PONTO_FRONTEIRA;
-DROP VIEW IF EXISTS V_POLIGONO;
-DROP VIEW IF EXISTS V_LINHA_EXTREMO_COINCIDENTE;
-DROP VIEW IF EXISTS V_LINHA_CONTORNO;
-
-CREATE VIEW V_LINHA_CONTORNO( g_linha, id_terreno ) AS
-( SELECT ST_MakeLine( g_ponto ), id_terreno FROM ( 
-    SELECT g_ponto, id_ordem, id_terreno
-         FROM gps_ponto
-ORDER BY id_terreno, id_ordem ) AS pontos_ordenados GROUP BY id_terreno );
-
-
-CREATE VIEW V_LINHA_EXTREMO_COINCIDENTE( id_terreno, g_linha ) AS 
-SELECT 
-id_terreno,
-ST_UnaryUnion( g_linha ) AS g_linha FROM V_LINHA_CONTORNO;
-
-CREATE VIEW V_POLIGONO( id_terreno, g_poligono ) AS 
-SELECT id_terreno, ST_BuildArea( g_linha )
-FROM V_LINHA_EXTREMO_COINCIDENTE;
-
-SELECT * FROM V_POLIGONO;

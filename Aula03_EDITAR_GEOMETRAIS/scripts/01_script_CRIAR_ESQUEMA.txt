@@ -32,11 +32,6 @@ DROP TABLE IF EXISTS tipo_terreno;
 ---------------------------------
 -- TIPO_TERRENO
 ---------------------------------
-CREATE TABLE tipo_terreno (
-    id INT PRIMARY KEY,
-    tipo VARCHAR(50) UNIQUE NOT NULL
-);
-
 -- b04
 CREATE TABLE tipo_terreno( 
     id_tipo_terreno VARCHAR PRIMARY KEY
@@ -45,13 +40,6 @@ CREATE TABLE tipo_terreno(
 ---------------------------------
 -- TERRENO
 ---------------------------------
-CREATE TABLE terreno (
-    id INT PRIMARY KEY,
-    tipo VARCHAR(50),
-    geom GEOMETRY(Polygon,4326),
-    FOREIGN KEY (tipo) REFERENCES tipo_terreno(tipo)
-);
-
 --b04
 
 CREATE TABLE terreno (
@@ -65,12 +53,6 @@ SELECT AddGeometryColumn('', 'terreno, 'g_terreno', -1, 'POLYGON', 2);
 ---------------------------------
 -- GPS_PONTO
 ---------------------------------
-CREATE TABLE gps_ponto (
-    id_ordem INT PRIMARY KEY,
-    id_terreno INT FOREIGN KEY REFERENCES terreno (id),
-    ponto GEOMETRY(Point,4326) -- 4326 é um SRID comum para coordenadas geográficas
-); -- WITH OIDS;
-
 --b04
 
 CREATE TABLE gps_ponto(
