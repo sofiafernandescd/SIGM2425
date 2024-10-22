@@ -31,15 +31,6 @@ DROP VIEW IF EXISTS V_LINHA_CONTORNO;
 -- VIEW V_LINHA_CONTORNO
 -- (a partir de GPS_PONTO)
 ----------------------------
-CREATE VIEW V_LINHA_CONTORNO ( g_linha, id2 ) AS
-SELECT ST_MakeLine( ponto ), id2
-FROM ( 
-	SELECT ponto, id2, id1 
-	FROM gps_ponto
-	ORDER BY id2, id1 ) AS pontos_ordenados
-GROUP BY id2;
-
-
 CREATE VIEW V_LINHA_CONTORNO AS
 SELECT id_terreno, ST_MakeLine(g_ponto ORDER BY id_ordem) 
 AS linha_contorno
@@ -85,8 +76,6 @@ SELECT * FROM V_LINHA_EXTREMO_COINCIDENTE;
 --CREATE VIEW V_POLIGONO( id_terreno, g_poligono ) AS
 --SELECT 
 
-
-
 --SELECT id_terreno, ST_AsText( g_poligono ) AS g_poligono
 --FROM V_POLIGONO;
 
@@ -102,13 +91,14 @@ SELECT * FROM V_POLIGONO;
 -- T_LINHA_EXTREMO_COINCIDENTE
 -- (criar tabela para visualizar no QGIS)
 ----------------------------
---CREATE TABLE T_PONTO_FRONTEIRA( id SERIAL PRIMARY KEY );
---SELECT AddGeometryColumn( '', 't_ponto_fronteira', 'g_multi_ponto', 0, 'MULTIPOINT', 2 );
+DROP TABLE IF EXISTS T_PONTO_FRONTEIRA;
+CREATE TABLE T_PONTO_FRONTEIRA( id SERIAL PRIMARY KEY );
+SELECT AddGeometryColumn( '', 't_ponto_fronteira', 'g_multi_ponto', 0, 'MULTIPOINT', 2 );
 
 
---SELECT ST_GeometryN( g_linha,
---                     generate_series( 1, ST_NumGeometries( g_linha ) ) ) AS g_linha
---FROM V_LINHA_EXTREMO_COINCIDENTE;
+SELECT ST_GeometryN( g_linha,
+                     generate_series( 1, ST_NumGeometries( g_linha ) ) ) AS g_linha
+FROM V_LINHA_EXTREMO_COINCIDENTE;
 
 --SELECT
 --( CASE WHEN x % 2 = 0
