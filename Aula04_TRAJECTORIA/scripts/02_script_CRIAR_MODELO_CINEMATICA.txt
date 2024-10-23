@@ -84,7 +84,7 @@ FROM cinematica;
 --------------------------------------------------------------
 
 INSERT INTO cinematica_hist
-SELECT nextval('cinematica_hist_id_hist_seq'), id, orientacao, velocidade , aceleracao, g_posicao
+SELECT nextval('cinematica_hist_id_hist_seq'), id, NOW(), orientacao, velocidade , aceleracao, g_posicao
 FROM cinematica;
 
 SELECT *
