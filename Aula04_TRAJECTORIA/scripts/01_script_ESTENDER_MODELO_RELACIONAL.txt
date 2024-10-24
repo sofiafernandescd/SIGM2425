@@ -167,6 +167,13 @@ BEGIN
 $$ LANGUAGE plpython3u;
 
 
+SELECT soma_vector_vector((3, 4)::t_vector, (2, -1)::t_vector);
+-- Resultado esperado: (5, 3)
+
+---------------------------------------------------
+-- Caso n�o consiga usar as fun��es em Python
+-- ent�o implementa usando o "PLPGSQL"
+---------------------------------------------------
 CREATE OR REPLACE FUNCTION soma_vector_vector( vec_a t_vector, vec_b t_vector )
 RETURNS t_vector
 AS $$
@@ -177,25 +184,6 @@ BEGIN
   new_x := vec_a.x + vec_b.x;
   new_y := vec_a.y + vec_b.y;
   RETURN (new_x, new_y);
-END;
-$$ LANGUAGE plpgsql;
-
-SELECT soma_vector_vector((3, 4)::t_vector, (2, -1)::t_vector);
--- Resultado esperado: (5, 3)
-
----------------------------------------------------
--- Caso n�o consiga usar as fun��es em Python
--- ent�o implementa usando o "PLPGSQL"
----------------------------------------------------
-CREATE OR REPLACE FUNCTION soma_vector_vector_PLPGSQL( vec_a t_vector, vec_b t_vector )
-RETURNS t_vector
-AS $$
-DECLARE
-    new_x real;
-    new_y real;
-BEGIN
--- <COMPLETAR>
-    RETURN (new_x, new_y);
 END;
 $$ LANGUAGE plpgsql;
 
