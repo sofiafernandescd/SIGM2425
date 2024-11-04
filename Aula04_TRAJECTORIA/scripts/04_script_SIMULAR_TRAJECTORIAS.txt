@@ -52,6 +52,9 @@ ROW( ROW( 2, 0.5 ), 1.0 )
 -- [2] Executar as linhas (A) e (B) em ciclo
 --------------------------------------------
 --------------------------------------------
+DO $$
+BEGIN
+FOR count in 1..10 LOOP
 -- (A)
 INSERT INTO cinematica_hist
 SELECT nextval('cinematica_hist_id_hist_seq'), id, orientacao, velocidade , aceleracao, g_posicao
@@ -67,8 +70,8 @@ SET g_posicao = novo_posicao( g_posicao, velocidade, 1 );
 UPDATE cinematica
 SET orientacao = novo_orientacao( orientacao, velocidade, 1 );
 --________________________________________________________________________________________________
-
-
+END LOOP;
+END; $$ ;
 
 
 -- ==========================

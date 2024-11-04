@@ -73,7 +73,7 @@ CREATE EXTENSION postgis
 \echo
 \echo "Aplicar o Extensor "python3" � Base de Dados" :dataBase
 ;
-CREATE EXTENSION plpython3u
+-- CREATE EXTENSION plpython3u
 ;
 
 --https://stackoverflow.com/questions/70650619/how-to-enable-plpython3u-on-macos

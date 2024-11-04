@@ -34,14 +34,16 @@ DROP FUNCTION IF EXISTS novo_velocidade( t_velocidade, t_aceleracao, real );
 -- Formulacao:
 -- return g_posicao + velocidade.linear * tempo
 --____________________________________________________
+
 CREATE OR REPLACE FUNCTION novo_posicao( g_posicao geometry, velocidade t_velocidade, tempo real )
 RETURNS geometry
 AS $$
-SELECT 
-ST_Translate( $1,
-              (($2).linear * $3 ).x,
-              (($2).linear * $3 ).y )
-$$ LANGUAGE 'sql';
+SELECT ST_Translate( $1,
+              $2.linear.x * $3 ,
+              $2.linear.y * $3 );
+             
+$$ LANGUAGE sql;
+
 
 
 -- TESTE
@@ -53,7 +55,7 @@ FROM cinematica;
 -- POINT(7, 8)
 -- POINT(4, 5)
 
-
+/*
 
 --_______________________________________________________
 -- Obter a nova orientacao do objecto no instante 'tempo'
@@ -65,7 +67,21 @@ RETURNS real
 AS $$
 return orientacao + velocidade['angular'] * tempo
 $$ LANGUAGE plpython3u;
+*/
 
+/*
+CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo real )
+RETURNS real
+AS $$
+return $1 as real + $2.angular as real * $3
+$$ LANGUAGE plpgsql;
+*/
+
+CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo INTEGER )
+RETURNS real
+AS $$
+SELECT $1 + $2.angular * $3
+$$ LANGUAGE sql;
 
 -- TESTE
 -- tempo=2
@@ -84,11 +100,17 @@ FROM cinematica;
 -- velocidade.linear + aceleracao.linear * tempo
 -- velocidade.angular + aceleracao.angular * tempo
 --_______________________________________________________
+
+
+/*
 CREATE OR REPLACE FUNCTION novo_velocidade( velocidade t_velocidade, aceleracao t_aceleracao, tempo real )
 RETURNS t_velocidade
 AS $$
--- <COMPLETAR>
-$$ LANGUAGE 'sql';
+SELECT ($1 + $2 * $3) ;
+$$ LANGUAGE sql;
+*/
+
+
 
 CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
 RETURNS t_velocidade AS $$
@@ -100,6 +122,8 @@ BEGIN
     RETURN nova_velocidade;
 END;
 $$ LANGUAGE plpgsql;
+
+
 
 
 -- TESTE

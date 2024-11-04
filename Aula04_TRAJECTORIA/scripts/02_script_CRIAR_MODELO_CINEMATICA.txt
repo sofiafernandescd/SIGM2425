@@ -40,7 +40,6 @@ SELECT AddGeometryColumn( '', 'cinematica', 'g_posicao', 3763, 'POINT', 2 );
 CREATE TABLE cinematica_hist(
     id_hist SERIAL PRIMARY KEY,
     id INTEGER REFERENCES cinematica(id),
-    data_hora TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     orientacao REAL,
     velocidade t_velocidade,
     aceleracao t_aceleracao
@@ -84,7 +83,7 @@ FROM cinematica;
 --------------------------------------------------------------
 
 INSERT INTO cinematica_hist
-SELECT nextval('cinematica_hist_id_hist_seq'), id, NOW(), orientacao, velocidade , aceleracao, g_posicao
+SELECT nextval('cinematica_hist_id_hist_seq'), id, orientacao, velocidade , aceleracao, g_posicao
 FROM cinematica;
 
 SELECT *
