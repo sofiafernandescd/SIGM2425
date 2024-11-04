@@ -56,8 +56,9 @@ DO $$
 BEGIN
 FOR count in 1..10 LOOP
 -- (A)
+FOR I IN 1..10 LOOP
 INSERT INTO cinematica_hist
-SELECT nextval('cinematica_hist_id_hist_seq'), id, orientacao, velocidade , aceleracao, g_posicao
+SELECT nextval('cinematica_hist_id_hist_seq'), id, NOW(), orientacao, velocidade , aceleracao, g_posicao
 FROM cinematica;
 
 -- (B)
@@ -79,13 +80,15 @@ END; $$ ;
 -- ==========================
 DROP VIEW IF EXISTS v_trajectoria_1;
 CREATE VIEW v_trajectoria_1 AS
-SELECT *
+SELECT id_hist, id, data_hora, orientacao, velocidade, aceleracao, 
+ST_AsText(g_posicao) AS g_posicao--*
 FROM cinematica_hist
 WHERE id = 1;
 
 DROP VIEW IF EXISTS v_trajectoria_2;
 CREATE VIEW v_trajectoria_2 AS
-SELECT *
+SELECT id_hist, id, data_hora, orientacao, velocidade, aceleracao, 
+ST_AsText(g_posicao) AS g_posicao --SELECT *
 FROM cinematica_hist
 WHERE id = 2;
 
@@ -104,4 +107,3 @@ CREATE VIEW v_cinematica_2 AS
 SELECT *
 FROM cinematica
 WHERE id = 2;
-
