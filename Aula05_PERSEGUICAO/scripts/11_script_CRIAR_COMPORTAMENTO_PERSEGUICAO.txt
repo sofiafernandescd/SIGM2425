@@ -4,7 +4,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis_aug_real
 ;
@@ -38,8 +38,8 @@ CREATE OR REPLACE FUNCTION novo_aceleracao_linear( g_posicao_perseguidor geometr
                                                    velocidade_a_perseguir real )
 RETURNS t_vector
 AS $$
--- <COMPLETAR>
-$$ LANGUAGE 'sql';
+SELECT  normalizar(((ST_X($2) - ST_X($1))::real, (ST_Y($2) - ST_Y($1))::real)) * $3 ;
+$$ LANGUAGE sql;
 
 
 -- TESTE

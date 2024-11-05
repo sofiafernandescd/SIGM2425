@@ -23,8 +23,8 @@
 -----------------------------------------------------
 DROP TABLE IF EXISTS pp CASCADE;
 ----------------------------------------------------
-DELETE FROM cinematica_hist;
-DELETE FROM cinematica;
+TRUNCATE cinematica_hist CASCADE;
+-- TRUNCATE cinematica CASCADE;
 
 
 
@@ -32,9 +32,9 @@ DELETE FROM cinematica;
 
 -- Suporte 'a nocao de perseguicao
 CREATE TABLE pp(
-objeto INTEGER REFERENCES cinematica.id,
-alvo INTEGER REFERENCES cinematica.id,
-aceleracao REAL
+id_perseguidor INTEGER ,
+ID_alvo INTEGER
+-- ,aceleracao REAL
 );
 -- <COMPLETAR>
 
