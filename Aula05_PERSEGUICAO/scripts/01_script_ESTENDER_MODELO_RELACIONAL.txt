@@ -146,6 +146,20 @@ SELECT (3, 4) * 5 AS v1, (3.5, 4.9) * 5.1 AS v2;
 --______________________
 -- Soma de dois vectores
 --______________________
+/*
+CREATE OR REPLACE FUNCTION soma_vector_vector( vec_a t_vector, vec_b t_vector )
+RETURNS t_vector
+AS $$
+-- <COMPLETAR>
+DECLARE
+    result t_vector;
+BEGIN
+    result.x := vec_a.x + vec_b.x;
+    result.y := vec_a.y + vec_b.y;
+    RETURN result;
+$$ LANGUAGE plpython3u;
+*/
+
 
 CREATE OR REPLACE FUNCTION soma_vector_vector( vec_a t_vector, vec_b t_vector )
 RETURNS t_vector
@@ -193,6 +207,21 @@ SELECT (3, 4) + (3.5, 4.9) * 5 AS v1, ( cast( (3, 4) AS t_vector ) + cast( (3.5,
 --__________________
 -- normalizar: dividir cada componente pela norma
 -- norma: raiz duadrada da soma dos quadrados de cada componente (x**2 e' x ao quadrado)
+/*
+CREATE OR REPLACE FUNCTION normalizar( vec t_vector )
+RETURNS t_vector
+AS $$
+from math import sqrt
+
+def normalizar(vec):
+    norma = sqrt(vec["x"]**2 + vec["y"]**2)
+    new_x = vec["x"] / norma
+    new_y = vec["y"] / norma
+    return {"x": new_x, "y": new_y}
+
+return normalizar(vec)
+$$ LANGUAGE plpython3u;
+*/
 
 
 CREATE OR REPLACE FUNCTION normalizar( vec t_vector )

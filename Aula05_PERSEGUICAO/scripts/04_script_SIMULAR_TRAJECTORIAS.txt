@@ -25,7 +25,6 @@
 DELETE FROM cinematica_hist;
 DELETE FROM cinematica;
 
-/*
 --________________________________________________
 -- Inserir dados para caracterizacao da cinematica
 --________________________________________________
@@ -46,6 +45,7 @@ ROW( ROW( 2, 0.5 ), 1.0 )
 );
 
 
+
 --------------------------------------------
 --------------------------------------------
 -- Simulacao de trajectorias:
@@ -55,10 +55,11 @@ ROW( ROW( 2, 0.5 ), 1.0 )
 DO $$
 BEGIN
 FOR count in 1..10 LOOP
+RAISE NOTICE 'count: %', count;
 -- (A)
-FOR I IN 1..10 LOOP
+
 INSERT INTO cinematica_hist
-SELECT nextval('cinematica_hist_id_hist_seq'), id, NOW(), orientacao, velocidade , aceleracao, g_posicao
+SELECT nextval('cinematica_hist_id_hist_seq'), id, orientacao, velocidade , aceleracao, g_posicao
 FROM cinematica;
 
 -- (B)
@@ -72,24 +73,22 @@ UPDATE cinematica
 SET orientacao = novo_orientacao( orientacao, velocidade, 1 );
 --________________________________________________________________________________________________
 END LOOP;
-END; $$ ;
-
-*/
-
-
+END ; $$;
+--
+SELECT * FROM cinematica_hist;
 -- ==========================
 -- Separar os dois movimentos
 -- ==========================
 DROP VIEW IF EXISTS v_trajectoria_1;
 CREATE VIEW v_trajectoria_1 AS
-SELECT id_hist, id, data_hora, orientacao, velocidade, aceleracao, 
+SELECT id_hist, id, orientacao, velocidade, aceleracao, 
 ST_AsText(g_posicao) AS g_posicao--*
 FROM cinematica_hist
 WHERE id = 1;
 
 DROP VIEW IF EXISTS v_trajectoria_2;
 CREATE VIEW v_trajectoria_2 AS
-SELECT id_hist, id, data_hora, orientacao, velocidade, aceleracao, 
+SELECT id_hist, id, orientacao, velocidade, aceleracao, 
 ST_AsText(g_posicao) AS g_posicao --SELECT *
 FROM cinematica_hist
 WHERE id = 2;

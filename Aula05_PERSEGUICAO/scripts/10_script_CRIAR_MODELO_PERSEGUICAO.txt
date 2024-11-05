@@ -32,7 +32,9 @@ DELETE FROM cinematica;
 
 -- Suporte 'a nocao de perseguicao
 CREATE TABLE pp(
--- <COMPLETAR>
+objeto INTEGER REFERENCES cinematica.id,
+alvo INTEGER REFERENCES cinematica.id,
+aceleracao REAL
 );
 -- <COMPLETAR>
 
