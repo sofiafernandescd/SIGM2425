@@ -4,7 +4,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis_aug_real
 ;
@@ -23,6 +23,8 @@
 -----------------------------------------------------
 DROP TABLE IF EXISTS pp CASCADE;
 ----------------------------------------------------
+DELETE FROM cinematica_hist;
+DELETE FROM cinematica;
 
 
 
