@@ -23,7 +23,7 @@
 -----------------------------------------------------
 DROP TABLE IF EXISTS pp CASCADE;
 ----------------------------------------------------
---TRUNCATE cinematica_hist;
+TRUNCATE cinematica_hist;
 --TRUNCATE cinematica CASCADE;
 
 

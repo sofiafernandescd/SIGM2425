@@ -4,7 +4,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis_aug_real
 ;
@@ -23,10 +23,12 @@
 DROP VIEW IF EXISTS v_posicionar;
 DROP TABLE IF EXISTS objecto_movel;
 CREATE TABLE objecto_movel(
---id <COMPLETAR>
---nome <COMPLETAR>
---id_cinematica fk1 FOREIGN KEY (id_cinematica) <COMPLETAR>
+id SERIAL PRIMARY KEY,
+nome VARCHAR(30),
+id_cinematica INTEGER ,
+FOREIGN KEY (id_cinematica) references cinematica(id)
 );
+
 SELECT AddGeometryColumn( '', 'objecto_movel', 'geo', 3763, 'POLYGON', 2 );
 --==========================================================================
 
