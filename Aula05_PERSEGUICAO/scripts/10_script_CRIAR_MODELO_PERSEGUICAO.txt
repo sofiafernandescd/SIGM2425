@@ -23,7 +23,7 @@
 -----------------------------------------------------
 DROP TABLE IF EXISTS pp CASCADE;
 ----------------------------------------------------
-TRUNCATE cinematica_hist;
+--TRUNCATE cinematica_hist;
 --TRUNCATE cinematica CASCADE;
 
 
@@ -34,9 +34,7 @@ TRUNCATE cinematica_hist;
 CREATE TABLE pp(
 id_perseguidor INTEGER ,
 ID_alvo INTEGER
--- ,aceleracao REAL
 );
--- <COMPLETAR>
 
 
 
