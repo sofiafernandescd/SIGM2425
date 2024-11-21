@@ -39,6 +39,7 @@ CREATE OR REPLACE FUNCTION novo_aceleracao_linear( g_posicao_perseguidor geometr
 RETURNS t_vector
 AS $$
 SELECT  normalizar(((ST_X($2) - ST_X($1))::real, (ST_Y($2) - ST_Y($1))::real)) * $3 ;
+--SELECT normalizar(ST_Distance($1, $2)) * $3;
 $$ LANGUAGE sql;
 
 

@@ -81,6 +81,7 @@ FROM cinematica;
 -- (B)
 UPDATE cinematica
 SET aceleracao = obter_aceleracao_perseguidor( pp.id_perseguidor, pp.id_alvo, 0.2 )
+--SET aceleracao = obter_aceleracao_perseguidor( pp.id_perseguidor, pp.id_alvo, 1 )
 FROM pp
 WHERE id = pp.id_perseguidor;
 
