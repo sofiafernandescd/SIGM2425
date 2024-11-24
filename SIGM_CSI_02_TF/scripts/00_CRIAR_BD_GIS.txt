@@ -27,3 +27,5 @@ CREATE DATABASE :dataBase;
 CREATE EXTENSION postgis;
 -- CREATE EXTENSION postgis_raster;
 -- CREATE EXTENSION plpython3u;
+
+

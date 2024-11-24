@@ -1,0 +1,176 @@
+-----------------
+-- Tipos de dados
+-----------------
+CREATE TYPE t_vector AS (
+    x REAL,
+    y REAL
+);
+
+CREATE TYPE t_velocidade AS (
+    linear t_vector,
+    angular REAL
+);
+
+CREATE TYPE t_aceleracao AS (
+    linear t_vector,
+    angular REAL
+);
+
+
+-----------------
+-- Funções
+-----------------
+CREATE OR REPLACE FUNCTION produto_vector_por_escalar( vec t_vector, v real )
+RETURNS t_vector
+AS $$
+DECLARE
+    new_x real;
+    new_y real;
+BEGIN
+    new_x := vec.x * v;
+    new_y := vec.y * v;
+    RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION soma_vector_vector( vec_a t_vector, vec_b t_vector )
+RETURNS t_vector
+AS $$
+DECLARE
+  new_x real;
+  new_y real;
+BEGIN
+  new_x := vec_a.x + vec_b.x;
+  new_y := vec_a.y + vec_b.y;
+  RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION normalizar( vec t_vector )
+RETURNS t_vector
+AS $$
+DECLARE
+  norma real;
+  new_x real;
+  new_y real;
+BEGIN
+  norma := sqrt(power(vec.x, 2) + power(vec.y, 2));
+  new_x := vec.x / norma;
+  new_y := vec.y / norma;
+  RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION novo_posicao( g_posicao geometry, velocidade t_velocidade, tempo real )
+RETURNS geometry
+AS $$
+SELECT ST_Translate( $1,
+              $2.linear.x * $3 ,
+              $2.linear.y * $3 );
+             
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo INTEGER )
+RETURNS real
+AS $$
+SELECT $1 + $2.angular * $3
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
+RETURNS t_velocidade AS $$
+DECLARE
+    nova_velocidade t_velocidade;
+BEGIN
+    nova_velocidade.linear := velocidade.linear + aceleracao.linear * tempo;
+    nova_velocidade.angular := velocidade.angular + aceleracao.angular * tempo;
+    RETURN nova_velocidade;
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------
+-- Operadores
+-----------------
+CREATE OPERATOR * (
+    leftarg = t_vector,
+    rightarg = real,
+    procedure = produto_vector_por_escalar,
+    commutator = *
+);
+
+CREATE OPERATOR + (
+    leftarg = t_vector,
+    rightarg = t_vector,
+    procedure = soma_vector_vector,
+    commutator = +
+);
+
+-----------------
+-- Entidades
+-----------------
+DROP TABLE IF EXISTS cinematica_hist CASCADE;
+DROP TABLE IF EXISTS pp CASCADE;
+DROP TABLE IF EXISTS cinematica CASCADE;
+DROP TABLE IF EXISTS objeto_movel;
+DROP TABLE IF EXISTS tipo_objeto_movel;
+DROP TABLE IF EXISTS rio;
+DROP TABLE IF EXISTS terreno;
+DROP TABLE IF EXISTS tipo_terreno;
+----------------------------------------------------
+
+CREATE TABLE tipo_terreno(
+    id_tipo_terreno INTEGER PRIMARY KEY,
+    tipo VARCHAR UNIQUE,
+    efeito_velocidade REAL -- VERIFICAR
+);
+
+CREATE TABLE terreno(
+    id_terreno INTEGER PRIMARY KEY,
+    tipo VARCHAR,
+    efeito_velocidade REAL, -- VERIFICAR
+    CONSTRAINT fk1 FOREIGN KEY(tipo) REFERENCES tipo_terreno(tipo)
+);
+
+SELECT AddGeometryColumn('', 'terreno', 'g_terreno', -1, 'POLYGON', 2);
+
+CREATE TABLE rio(
+  id_rio INTEGER PRIMARY KEY
+);
+
+SELECT AddGeometryColumn('', 'rio', 'g_rio', -1, 'LINESTRING', 2); -- linha central do rio, define-se largura (caudal)
+
+CREATE TABLE tipo_objeto_movel(
+    id_tipo_objeto INTEGER PRIMARY KEY,
+    tipo_objeto VARCHAR UNIQUE
+);
+
+CREATE TABLE objeto_movel(
+    id_objeto INTEGER PRIMARY KEY,
+    tipo_objeto VARCHAR,
+    CONSTRAINT fk1 FOREIGN KEY(tipo_objeto) REFERENCES tipo_objeto_movel(tipo_objeto)
+);
+
+SELECT AddGeometryColumn('', 'objeto_movel', 'g_objeto', -1, 'POINT', 2);
+
+CREATE TABLE cinematica(
+    id SERIAL PRIMARY KEY,
+    orientacao REAL,
+    velocidade t_velocidade,
+    aceleracao t_aceleracao
+);
+
+SELECT AddGeometryColumn( '', 'cinematica', 'g_posicao', 3763, 'POINT', 2 );
+
+CREATE TABLE cinematica_hist(
+    id_hist SERIAL PRIMARY KEY,
+    id INTEGER REFERENCES cinematica(id),
+    orientacao REAL,
+    velocidade t_velocidade,
+    aceleracao t_aceleracao
+);
+
+SELECT AddGeometryColumn( '', 'cinematica_hist', 'g_posicao', 3763, 'POINT', 2 );
+
+CREATE TABLE pp(
+id_perseguidor INTEGER ,
+id_alvo INTEGER
+);
