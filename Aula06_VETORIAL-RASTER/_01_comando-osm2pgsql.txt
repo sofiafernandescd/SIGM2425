@@ -6,7 +6,7 @@
 -- a instrucoes contidas neste ficheiro devem ser executadas numa "Command Prompt"
 -- e.g., copiando as instrucoes ou construindo uma .bat
 --
--- estas instrucoes assumem que o "path" corrente contém a pasta "osm2pgsq"
+-- estas instrucoes assumem que o "path" corrente contï¿½m a pasta "osm2pgsq"
 -- (essa e' a pasta criada depois de descompactar a aplicacao em "osm2pgsql.zip")
 
 
@@ -36,3 +36,6 @@ set pgpassword=A-SUA-PASSWORD
 -- pelo que pode executar varias vezes que tera' sempre o mesmo resultado
 -- OLD -- .\osm2pgsql\Win32\osm2pgsql -c -d my_gis_raster -U postgres -H localhost -S .\default.style .\lisbon_portugal.osm.pbf
 .\osm2pgsql-bin\osm2pgsql -c -d my_gis_raster -U postgres -H localhost -S .\default.style .\lisbon_portugal.osm.pbf
+
+
+osm2pgsql -c -d my_gis_raster -U postgres -W -H localhost -S ./default.style ./lisbon_portugal.osm.pbf

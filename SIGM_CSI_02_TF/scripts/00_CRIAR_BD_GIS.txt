@@ -1,0 +1,29 @@
+-------------------
+-- Dados da Conexao
+-------------------
+\set userName postgres
+\set hostName localhost
+\set portNumber 5432
+
+-------------
+-- Nome da BD
+-------------
+\set dataBase geo_db;
+
+-------------
+-- Criar BD
+-------------
+DROP DATABASE IF EXISTS :dataBase;
+CREATE DATABASE :dataBase;
+
+---------------
+-- Conexão à BD
+---------------
+\c :dataBase :userName :hostName :portNumber;
+
+----------------------
+-- Adicionar extensões
+----------------------
+CREATE EXTENSION postgis;
+-- CREATE EXTENSION postgis_raster;
+-- CREATE EXTENSION plpython3u;
