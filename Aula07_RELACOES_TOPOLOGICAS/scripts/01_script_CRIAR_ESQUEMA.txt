@@ -4,7 +4,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis_top
 ;
@@ -25,4 +25,21 @@ DROP TABLE IF EXISTS geo_2d;
 --------------------------------
 -- <COMPLETAR>
 
+CREATE TABLE geo_0d(
+    id SERIAL PRIMARY KEY,
+    geom GEOMETRY(POINT, 4326)
+);
 
+
+CREATE TABLE geo_1d(
+    id SERIAL PRIMARY KEY,
+    geom GEOMETRY(LINESTRING, 4326)
+);
+
+
+CREATE TABLE geo_2d(
+    id SERIAL PRIMARY KEY,
+    geom GEOMETRY(POLYGON, 4326)
+
+
+);
