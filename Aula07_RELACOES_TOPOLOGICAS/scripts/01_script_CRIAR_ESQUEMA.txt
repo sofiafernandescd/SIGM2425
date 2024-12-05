@@ -16,30 +16,32 @@
 --==========================
 
 
-DROP TABLE IF EXISTS geo_0d;
-DROP TABLE IF EXISTS geo_1d;
-DROP TABLE IF EXISTS geo_2d;
+DROP TABLE IF EXISTS geo_0d_paragem;
+DROP TABLE IF EXISTS geo_1d_carreira;
+DROP TABLE IF EXISTS geo_2d_zona;
 
 --------------------------------
 -- Criar o Esquema Relacional
 --------------------------------
 -- <COMPLETAR>
 
-CREATE TABLE geo_0d(
+CREATE TABLE geo_0d_paragem(
     id SERIAL PRIMARY KEY,
+    nome VARCHAR(80),
     geom GEOMETRY(POINT, 4326)
 );
 
 
-CREATE TABLE geo_1d(
+CREATE TABLE geo_1d_carreira(
     id SERIAL PRIMARY KEY,
+    nome VARCHAR(80),
     geom GEOMETRY(LINESTRING, 4326)
 );
 
 
-CREATE TABLE geo_2d(
+CREATE TABLE geo_2d_zona(
     id SERIAL PRIMARY KEY,
+    nome VARCHAR(80),
     geom GEOMETRY(POLYGON, 4326)
-
-
 );
+
