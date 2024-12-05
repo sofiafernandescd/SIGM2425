@@ -4,7 +4,7 @@
 
 
 --=============
--- Ligação à BD
+-- Ligaï¿½ï¿½o ï¿½ BD
 --=============
 \set dataBase my_gis_top
 ;
@@ -16,7 +16,7 @@
 --==========================
 
 
--- mais informação sobre "client_encoding" em:
+-- mais informaï¿½ï¿½o sobre "client_encoding" em:
 -- http://www.postgresql.org/docs/8.1/static/multibyte.html
 \encoding WIN1250;
 
@@ -25,8 +25,53 @@
 -- Interrogar com Matriz Topologica
 --=================================
 
--- <COMPLETAR>
+-- 4.a)
+DROP VIEW IF EXISTS ex4a;
+CREATE VIEW ex4a AS
+SELECT c.nome_carreira, z.nome_zona FROM 
+geo_1d_carreira AS c,
+geo_2d_zona AS z
+WHERE ST_Relate(c.geom_carreira, z.geom_zona, '*1*******')
+;
 
+SELECT * FROM ex4a;
+
+-- 4.b)
+DROP VIEW IF EXISTS ex4b;
+CREATE VIEW ex4b AS
+SELECT c.nome_paragem, z.nome_zona FROM 
+geo_0d_paragem AS c,
+geo_2d_zona AS z
+WHERE ST_Relate(c.geom_paragem, z.geom_zona, '*0*******')
+;
+
+SELECT * FROM ex4b;
+
+-- 4.c)
+INSERT INTO geo_0d_paragem(nome_paragem, geom_paragem) 
+-- VALUES ('BraÃ§o de Prata', ST_MakePoint(17.00, 10.00));
+VALUES ('BraÃ§o de Prata', ST_MakePoint(10.00, 17.00));
+SELECT * FROM geo_0d_paragem;
+
+
+-- 4.d)
+
+-- 4.e)
+
+-- 4.f)
+
+-- 4.g)
+
+-- 4.h)
+
+-- 4.g)
+
+-- 4.h)
+
+
+--================================================
+-- Obter Matrizes Topologicas e Objetos GeomÃ©tricos
+--=================================================
 
 
 

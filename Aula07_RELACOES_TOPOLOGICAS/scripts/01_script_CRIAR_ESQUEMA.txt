@@ -16,6 +16,7 @@
 --==========================
 
 
+DROP VIEW IF EXISTS ex4a;
 DROP TABLE IF EXISTS geo_0d_paragem;
 DROP TABLE IF EXISTS geo_1d_carreira;
 DROP TABLE IF EXISTS geo_2d_zona;
@@ -26,22 +27,22 @@ DROP TABLE IF EXISTS geo_2d_zona;
 -- <COMPLETAR>
 
 CREATE TABLE geo_0d_paragem(
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(80),
-    geom GEOMETRY(POINT, 4326)
+    id_paragem SERIAL PRIMARY KEY,
+    nome_paragem VARCHAR(80),
+    geom_paragem GEOMETRY(POINT, 4326)
 );
 
 
 CREATE TABLE geo_1d_carreira(
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(80),
-    geom GEOMETRY(LINESTRING, 4326)
+    id_carreira SERIAL PRIMARY KEY,
+    nome_carreira VARCHAR(80),
+    geom_carreira GEOMETRY(LINESTRING, 4326)
 );
 
 
 CREATE TABLE geo_2d_zona(
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(80),
-    geom GEOMETRY(POLYGON, 4326)
+    id_zona SERIAL PRIMARY KEY,
+    nome_zona VARCHAR(80),
+    geom_zona GEOMETRY(POLYGON, 4326)
 );
 
