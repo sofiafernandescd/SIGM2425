@@ -29,10 +29,12 @@
 DROP VIEW IF EXISTS ex4a;
 CREATE VIEW ex4a AS
 SELECT c.nome_carreira, z.nome_zona FROM 
-geo_1d_carreira AS c,
-geo_2d_zona AS z
-WHERE ST_Relate(c.geom_carreira, z.geom_zona, '*1*******')
-;
+    geo_1d_carreira AS c,
+    geo_2d_zona AS z
+WHERE ST_Relate(c.geom_carreira, z.geom_zona, '*1*******');
+--WHERE
+--    ST_Relate(c.geom_carreira, z.geom_zona, 'TFFFFF0FF') OR -- Linha contida no polígono
+--    ST_Relate(c.geom_carreira, z.geom_zona, 'FTFFFFFFF');  -- Linha igual a um lado do polígono
 
 SELECT * FROM ex4a;
 
@@ -40,8 +42,8 @@ SELECT * FROM ex4a;
 DROP VIEW IF EXISTS ex4b;
 CREATE VIEW ex4b AS
 SELECT c.nome_paragem, z.nome_zona FROM 
-geo_0d_paragem AS c,
-geo_2d_zona AS z
+    geo_0d_paragem AS c,
+    geo_2d_zona AS z
 WHERE ST_Relate(c.geom_paragem, z.geom_zona, '*0*******')
 ;
 
@@ -73,5 +75,74 @@ SELECT * FROM geo_0d_paragem;
 -- Obter Matrizes Topologicas e Objetos Geométricos
 --=================================================
 
+-- 5.a)
+SELECT 
+    p.nome_paragem, 
+    c.nome_carreira, 
+    ST_Relate(p.geom_paragem, c.geom_carreira) AS matriz_topologica
+FROM 
+    geo_0d_paragem p, 
+    geo_1d_carreira c;
 
+-- 5.b)
+SELECT
+    p.nome_paragem, 
+    c.nome_carreira, 
+    ST_Relate(p.geom_paragem, c.geom_carreira, '0FFFFF102') AS matriz_topologica
+FROM 
+    geo_0d_paragem p, 
+    geo_1d_carreira c;
+
+
+-- 5.c)
+SELECT 
+    l1.nome_carreira AS linha1, 
+    l2.nome_carreira AS linha2, 
+    ST_Relate(l1.geom_carreira, l2.geom_carreira) AS matriz_topologica
+FROM 
+    geo_1d_carreira l1, 
+    geo_1d_carreira l2;
+
+
+-- 5.d)
+SELECT 
+    c.nome_carreira, 
+    z.nome_zona, 
+    ST_Relate(c.geom_carreira, z.geom_zona) AS matriz_topologica
+FROM 
+    geo_1d_carreira c, 
+    geo_2d_zona z;
+
+-- 5.e)
+SELECT 
+    c.nome_carreira,
+    z.nome_zona,
+    ST_Relate(c.nome_carreira, z.geom_zona, '0FFFFF102') AS matriz_topologica
+FROM 
+    geo_1d_carreira c,
+    geo_2d_zona z;
+
+
+-- 5.f)
+SELECT 
+    ST_Intersection(l1.geom_carreira, l2.geom_carreira) AS ponto_intersecao
+FROM 
+    geo_1d_carreira l1, 
+    geo_1d_carreira l2
+WHERE 
+    ST_Intersects(l1.geom_carreira, l2.geom_carreira);
+
+-- 5.g)
+-- Parte de uma linha dentro de um polígono:
+SELECT ST_Intersection(l.geom_carreira, z.geom_zona)
+FROM geo_1d_carreira l, geo_2d_zona z
+WHERE ST_Relate(l.geom_carreira, z.geom_zona, 'TFFFFFFF');
+
+-- Distância entre um ponto e uma linha:
+SELECT ST_Distance(p.geom_paragem, l.geom_carreira)
+FROM geo_0d_paragem p, geo_1d_carreira l;
+
+-- Buffer ao redor de um ponto:
+SELECT ST_Buffer(p.geom_paragem, 100)
+FROM geo_0d_paragem p;
 

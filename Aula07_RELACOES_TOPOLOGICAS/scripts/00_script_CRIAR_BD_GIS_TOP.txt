@@ -28,7 +28,7 @@
 \echo
 \echo "Remover Base de Dados" :dataBase
 ;
-DROP DATABASE IF EXISTS my_gis_top
+DROP DATABASE IF EXISTS :dataBase
 ;
 
 
