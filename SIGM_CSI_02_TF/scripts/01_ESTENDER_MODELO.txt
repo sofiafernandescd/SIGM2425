@@ -1,0 +1,191 @@
+--########################################################
+--# Grupo 2, baseado nos exemplos do Professor Paulo Trigo
+--########################################################
+
+--=============
+-- Ligacao a BD
+--=============
+\set dataBase my_gis_aug_real
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+----------------------------------------------------
+----------------------------------------------------
+-- Estender o Modelo Relacional com Novas Estruturas
+----------------------------------------------------
+----------------------------------------------------
+DROP TYPE IF EXISTS t_velocidade;
+DROP TYPE IF EXISTS t_aceleracao;
+DROP OPERATOR IF EXISTS *( t_vector, real );
+DROP OPERATOR IF EXISTS *( real, t_vector );
+DROP OPERATOR IF EXISTS +( t_vector, t_vector );
+DROP FUNCTION IF EXISTS produto_vector_por_escalar( t_vector, real );
+DROP FUNCTION IF EXISTS produto_vector_por_escalar_sql( t_vector, real );
+DROP FUNCTION IF EXISTS produto_vector_por_escalar_plgsql( t_vector, real );
+DROP FUNCTION IF EXISTS soma_vector_vector( t_vector, t_vector );
+DROP FUNCTION IF EXISTS soma_vector_vector_plpgsql( t_vector, t_vector );
+DROP FUNCTION IF EXISTS normalizar( t_vector );
+DROP FUNCTION IF EXISTS normalizar_plpgsql( t_vector );
+DROP TYPE IF EXISTS t_vector;
+----------------------------------------------------
+DROP FUNCTION IF EXISTS novo_posicao( geometry, t_velocidade, real );
+DROP FUNCTION IF EXISTS novo_orientacao( real, t_velocidade, real );
+DROP FUNCTION IF EXISTS novo_velocidade( t_velocidade, t_aceleracao, real );
+
+
+-----------------
+-- Tipos de dados
+-----------------
+CREATE TYPE t_vector AS (
+    x REAL,
+    y REAL
+);
+
+CREATE TYPE t_velocidade AS (
+    linear t_vector,
+    angular REAL
+);
+
+CREATE TYPE t_aceleracao AS (
+    linear t_vector,
+    angular REAL
+);
+
+
+-----------------
+-- Funções
+-----------------
+CREATE OR REPLACE FUNCTION produto_vector_por_escalar( vec t_vector, v real )
+RETURNS t_vector
+AS $$
+DECLARE
+    new_x real;
+    new_y real;
+BEGIN
+    new_x := vec.x * v;
+    new_y := vec.y * v;
+    RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION soma_vector_vector( vec_a t_vector, vec_b t_vector )
+RETURNS t_vector
+AS $$
+DECLARE
+  new_x real;
+  new_y real;
+BEGIN
+  new_x := vec_a.x + vec_b.x;
+  new_y := vec_a.y + vec_b.y;
+  RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION normalizar( vec t_vector )
+RETURNS t_vector
+AS $$
+DECLARE
+  norma real;
+  new_x real;
+  new_y real;
+BEGIN
+  norma := sqrt(power(vec.x, 2) + power(vec.y, 2));
+  new_x := vec.x / norma;
+  new_y := vec.y / norma;
+  RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION novo_posicao( g_posicao geometry, velocidade t_velocidade, tempo real )
+RETURNS geometry
+AS $$
+SELECT ST_Translate( $1,
+              $2.linear.x * $3 ,
+              $2.linear.y * $3 );
+             
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo INTEGER )
+RETURNS real
+AS $$
+SELECT $1 + $2.angular * $3
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
+RETURNS t_velocidade AS $$
+DECLARE
+    nova_velocidade t_velocidade;
+BEGIN
+    nova_velocidade.linear := velocidade.linear + aceleracao.linear * tempo;
+    nova_velocidade.angular := velocidade.angular + aceleracao.angular * tempo;
+    RETURN nova_velocidade;
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------
+-- Operadores
+-----------------
+CREATE OPERATOR * (
+    leftarg = t_vector,
+    rightarg = real,
+    procedure = produto_vector_por_escalar,
+    commutator = *
+);
+
+CREATE OPERATOR + (
+    leftarg = t_vector,
+    rightarg = t_vector,
+    procedure = soma_vector_vector,
+    commutator = +
+);
+
+
+-----------------
+--- Funções
+--____________________________________________________
+-- Obter a nova posicao do objecto no instante 'tempo'
+-- Formulacao:
+-- return g_posicao + velocidade.linear * tempo
+--____________________________________________________
+
+CREATE OR REPLACE FUNCTION novo_posicao( g_posicao geometry, velocidade t_velocidade, tempo real )
+RETURNS geometry
+AS $$
+SELECT ST_Translate( $1,
+              $2.linear.x * $3 ,
+              $2.linear.y * $3 );
+             
+$$ LANGUAGE sql;
+
+--_______________________________________________________
+-- Obter a nova orientacao do objecto no instante 'tempo'
+-- Formulacao:
+-- return orientacao + velocidade.angular * tempo
+--_______________________________________________________
+CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo INTEGER )
+RETURNS real
+AS $$
+SELECT $1 + $2.angular * $3
+$$ LANGUAGE sql;
+
+--_______________________________________________________
+-- Obter a nova velocidade do objecto no instante 'tempo'
+-- Formulacao:
+-- velocidade.linear + aceleracao.linear * tempo
+-- velocidade.angular + aceleracao.angular * tempo
+--_______________________________________________________
+CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
+RETURNS t_velocidade AS $$
+DECLARE
+    nova_velocidade t_velocidade;
+BEGIN
+    nova_velocidade.linear := velocidade.linear + aceleracao.linear * tempo;
+    nova_velocidade.angular := velocidade.angular + aceleracao.angular * tempo;
+    RETURN nova_velocidade;
+END;
+$$ LANGUAGE plpgsql;

@@ -1,3 +1,7 @@
+--########################################################
+--# Grupo 2, baseado nos exemplos do Professor Paulo Trigo
+--########################################################
+
 -------------------
 -- Dados da Conexao
 -------------------
@@ -8,24 +12,41 @@
 -------------
 -- Nome da BD
 -------------
-\set dataBase geo_db;
+\set dataBase aug_real_db
+;
 
--------------
--- Criar BD
--------------
-DROP DATABASE IF EXISTS :dataBase;
-CREATE DATABASE :dataBase;
 
 ---------------
--- Conexão à BD
+-- Remover a BD
 ---------------
-\c :dataBase :userName :hostName :portNumber;
+\echo
+\echo "Remover Base de Dados" :dataBase
+;
+DROP DATABASE IF EXISTS :dataBase
+;
 
-----------------------
--- Adicionar extensões
-----------------------
+
+-------------
+-- Criar a BD
+-------------
+\echo
+\echo "Criar Base de Dados" :dataBase
+;
+CREATE DATABASE :dataBase
+;
+
+
+\echo
+\echo "Estabelecer Conexao com a Base de Dados" :dataBase
+;
+\c :dataBase :userName :hostName :portNumber
+;
+
+
+\echo
+\echo "Aplicar o Extensores à Base de Dados" :dataBase
+;
 CREATE EXTENSION postgis;
 -- CREATE EXTENSION postgis_raster;
 -- CREATE EXTENSION plpython3u;
-
 

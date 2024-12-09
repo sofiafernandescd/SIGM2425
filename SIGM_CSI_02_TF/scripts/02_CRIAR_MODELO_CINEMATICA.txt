@@ -1,0 +1,53 @@
+--########################################################
+--# Grupo 2, baseado nos exemplos do Professor Paulo Trigo
+--########################################################
+
+--=============
+-- Ligacao a BD
+--=============
+\set dataBase my_gis_aug_real
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+-- Criar Estrutura de suporte 'a cinematica e 'a nocao de perseguicao
+---------------------------------------------------------------------
+---------------------------------------------------------------------
+DROP TABLE IF EXISTS cinematica_hist CASCADE;
+DROP TABLE IF EXISTS pp CASCADE;
+DROP TABLE IF EXISTS cinematica CASCADE;
+----------------------------------------------------
+
+CREATE TABLE cinematica(
+    id SERIAL PRIMARY KEY,
+    orientacao REAL,
+    velocidade t_velocidade,
+    aceleracao t_aceleracao
+);
+SELECT AddGeometryColumn( '', 'cinematica', 'g_posicao', 3763, 'POINT', 2 );
+
+----------------------------------------------------
+
+-- Regista trajectos (i.e., historico da cinematica)
+CREATE TABLE cinematica_hist(
+    id_hist SERIAL PRIMARY KEY,
+    id INTEGER REFERENCES cinematica(id),
+    orientacao REAL,
+    velocidade t_velocidade,
+    aceleracao t_aceleracao
+);
+SELECT AddGeometryColumn( '', 'cinematica_hist', 'g_posicao', 3763, 'POINT', 2 );
+
+
+-- Suporte 'a nocao de perseguicao
+CREATE TABLE pp(
+id_perseguidor INTEGER ,
+id_alvo INTEGER
+);
