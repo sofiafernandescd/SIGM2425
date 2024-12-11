@@ -5,7 +5,7 @@
 --=============
 -- Ligacao a BD
 --=============
-\set dataBase my_gis_aug_real
+\set dataBase aug_real_db
 ;
 \set userName postgres
 ;
@@ -101,32 +101,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION novo_posicao( g_posicao geometry, velocidade t_velocidade, tempo real )
-RETURNS geometry
-AS $$
-SELECT ST_Translate( $1,
-              $2.linear.x * $3 ,
-              $2.linear.y * $3 );
-             
-$$ LANGUAGE sql;
-
-CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo INTEGER )
-RETURNS real
-AS $$
-SELECT $1 + $2.angular * $3
-$$ LANGUAGE sql;
-
-CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
-RETURNS t_velocidade AS $$
-DECLARE
-    nova_velocidade t_velocidade;
-BEGIN
-    nova_velocidade.linear := velocidade.linear + aceleracao.linear * tempo;
-    nova_velocidade.angular := velocidade.angular + aceleracao.angular * tempo;
-    RETURN nova_velocidade;
-END;
-$$ LANGUAGE plpgsql;
-
 -----------------
 -- Operadores
 -----------------
@@ -145,14 +119,14 @@ CREATE OPERATOR + (
 );
 
 
------------------
---- Funções
+------------------------
+-- Funções de cinematica
+------------------------
 --____________________________________________________
 -- Obter a nova posicao do objecto no instante 'tempo'
 -- Formulacao:
 -- return g_posicao + velocidade.linear * tempo
 --____________________________________________________
-
 CREATE OR REPLACE FUNCTION novo_posicao( g_posicao geometry, velocidade t_velocidade, tempo real )
 RETURNS geometry
 AS $$
@@ -167,6 +141,45 @@ $$ LANGUAGE sql;
 -- Formulacao:
 -- return orientacao + velocidade.angular * tempo
 --_______________________________________________________
+CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo INTEGER )
+RETURNS real
+AS $$
+SELECT $1 + $2.angular * $3
+$$ LANGUAGE sql;
+
+--_______________________________________________________
+-- Obter a nova velocidade do objecto no instante 'tempo'
+-- Formulacao:
+-- velocidade.linear + aceleracao.linear * tempo
+-- velocidade.angular + aceleracao.angular * tempo
+--_______________________________________________________
+CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
+RETURNS t_velocidade AS $$
+DECLARE
+    nova_velocidade t_velocidade;
+BEGIN
+    nova_velocidade.linear := velocidade.linear + aceleracao.linear * tempo;
+    nova_velocidade.angular := velocidade.angular + aceleracao.angular * tempo;
+    RETURN nova_velocidade;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+-----------------
+--- Funções
+
+
+CREATE OR REPLACE FUNCTION novo_posicao( g_posicao geometry, velocidade t_velocidade, tempo real )
+RETURNS geometry
+AS $$
+SELECT ST_Translate( $1,
+              $2.linear.x * $3 ,
+              $2.linear.y * $3 );
+             
+$$ LANGUAGE sql;
+
+
 CREATE OR REPLACE FUNCTION novo_orientacao( orientacao real, velocidade t_velocidade, tempo INTEGER )
 RETURNS real
 AS $$

@@ -1,14 +1,21 @@
 import pygame
 import pymunk
 import pymunk.pygame_util
-import psycopg2
+import psycopg2 # MacOS pip install psycopg2-binary
+import dotenv
+import os
+
+# Carregar variáveis de ambiente
+dotenv.load_dotenv()
+pw = os.getenv('PW')
+print('PASSWORD:', pw)
 
 # Conexão com o banco de dados
 conn = psycopg2.connect(
-    database="seu_banco",
-    user="seu_usuario",
-    password="sua_senha",
-    host="seu_host",
+    database="aug_real_db",
+    user="postgres",
+    password=pw,
+    host="localhost",
     port="5432"
 )
 cur = conn.cursor()

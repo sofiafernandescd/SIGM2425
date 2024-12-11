@@ -6,7 +6,7 @@
 --=============
 -- Ligacao a BD
 --=============
-\set dataBase my_gis_aug_real
+\set dataBase aug_real_db
 ;
 \set userName postgres
 ;

@@ -5,7 +5,7 @@
 --=============
 -- Ligacao a BD
 --=============
-\set dataBase my_gis_aug_real
+\set dataBase aug_real_db
 ;
 \set userName postgres
 ;
@@ -45,6 +45,19 @@ CREATE TABLE cinematica_hist(
 );
 SELECT AddGeometryColumn( '', 'cinematica_hist', 'g_posicao', 3763, 'POINT', 2 );
 
+
+--__________________________________________________________________________
+-- Tabela com um qualquer objecto geometrico que se desloca com a cinematica
+--__________________________________________________________________________
+DROP TABLE IF EXISTS objecto_movel;
+CREATE TABLE objecto_movel(
+id SERIAL PRIMARY KEY,
+nome VARCHAR(30),
+id_cinematica INTEGER ,
+FOREIGN KEY (id_cinematica) references cinematica(id)
+);
+
+SELECT AddGeometryColumn( '', 'objecto_movel', 'geo', 3763, 'POLYGON', 2 );
 
 -- Suporte 'a nocao de perseguicao
 CREATE TABLE pp(
