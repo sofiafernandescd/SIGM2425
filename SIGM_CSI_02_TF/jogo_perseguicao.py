@@ -12,7 +12,7 @@ print('PASSWORD:', pw)
 
 # Conexão com o banco de dados
 conn = psycopg2.connect(
-    database="aug_real_db",
+    database="my_gis_top",
     user="postgres",
     password=pw,
     host="localhost",
