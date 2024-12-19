@@ -23,13 +23,15 @@
    'sources': {
     'source-from-web': {
      'type': 'raster',
-     'tiles': [<your-code-here>] }
+     'tiles': [
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png' // Replace placeholder URL
+     ] }
    },
 
    'layers': [{ 'id': 'source-from-web-layer',
                 'type': 'raster',
                 'source': 'source-from-web',
-                'minzoom': 0, 'maxzoom': <your-code-here> }
+                'minzoom': 0, 'maxzoom': 22 } // Set maximum zoom level
    ] } });
 
 </script>
