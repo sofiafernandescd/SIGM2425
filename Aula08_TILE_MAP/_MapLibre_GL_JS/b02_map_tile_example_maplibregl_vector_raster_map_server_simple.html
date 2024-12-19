@@ -51,7 +51,10 @@
    'version': 8,
 
    'sources': {
-    <your-code-here>,
+    'vector-source': { // Add source for vector tiles
+     'type': 'vector',
+     'url': vector_url  // Use the constructed vector_url
+    },
 
     'source-from-web': {
      'type': 'raster',
@@ -64,7 +67,14 @@
                 'source': 'source-from-web',
                 'minzoom': 0, 'maxzoom': 22 },
 
-              <your-code-here>
+                { // Add layer for vector tiles
+                'id': id_layer,
+                'type': 'fill',
+                'source': 'vector-source',
+                'paint': {
+                 'fill-color': 'rgba(200, 0, 0, 0.3)', // Adjust fill color as desired
+                 'fill-outline-color': line_color
+                }}
    ] } });
 
 
