@@ -27,8 +27,8 @@
  var properties = "properties=formal_en, name_pt, pop_est"
 
  // complete url of service to be provided by the vector tile server
- var vector_url = vector_server + vector_source_layer + "/" + "{z}/{x}/{y}.pbf" + url_QUERY + geom_column + url_SEP + srid + url_SEP + properties;
- // var vector_url = vector_server + "{z}/{x}/{y}.pbf";
+ //var vector_url = vector_server + vector_source_layer + "/" + "{z}/{x}/{y}.pbf" + url_QUERY + geom_column + url_SEP + srid + url_SEP + properties;
+ var vector_url = vector_server + "{z}/{x}/{y}.pbf";
 
  // IMPORTANT: eliminate all white-spaces from vector_url
  vector_url = vector_url.replace(/\s+/g, '')
@@ -71,6 +71,7 @@
                 'id': id_layer,
                 'type': 'fill',
                 'source': 'vector-source',
+                'source-layer': 'public.ne_50m_admin_0_countries', // Specify the source layer
                 'paint': {
                  'fill-color': 'rgba(200, 0, 0, 0.3)', // Adjust fill color as desired
                  'fill-outline-color': line_color

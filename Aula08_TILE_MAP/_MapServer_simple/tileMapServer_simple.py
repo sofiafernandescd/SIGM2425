@@ -29,8 +29,8 @@ PORT = 8080
 DATABASE = {
   'user':     'x@y.z', #'postgres',
   'password': 'postgres',
-  'host':     'docker_postgis',
-  'port':     '5432',
+  'host':     'localhost',
+  'port':     '5050',
   'database': 'my_gis'
   }
 

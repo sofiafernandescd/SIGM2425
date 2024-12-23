@@ -104,7 +104,7 @@ $$ LANGUAGE plpgsql;
 -----------------
 -- Operadores
 -----------------
-CREATE OPERATOR * (
+/*CREATE OPERATOR * (
     leftarg = t_vector,
     rightarg = real,
     procedure = produto_vector_por_escalar,
@@ -116,7 +116,7 @@ CREATE OPERATOR + (
     rightarg = t_vector,
     procedure = soma_vector_vector,
     commutator = +
-);
+);*/
 
 
 ------------------------
