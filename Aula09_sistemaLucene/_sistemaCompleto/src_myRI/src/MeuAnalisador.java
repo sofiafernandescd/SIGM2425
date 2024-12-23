@@ -51,7 +51,7 @@ extends Analyzer
    }
 
 
-   // Método abstracto em "Analyzer"
+   // MÃ©todo abstracto em "Analyzer"
    @Override
    //PTS-2015 protected TokenStreamComponents createComponents( String nomeDoCampo, Reader leitorIO )
    protected TokenStreamComponents createComponents( String nomeDoCampo )

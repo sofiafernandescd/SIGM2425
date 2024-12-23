@@ -44,12 +44,12 @@ implements I_Config
            
       meuIndexador.indexarArtigo( "O rato e o rei",
                                   "Desconhecido & Popular",
-                                  "destrava línguas",
+                                  "destrava lÃ­nguas",
                                   "oArtigo_A.txt" );
       
       meuIndexador.indexarArtigo( "A vida",
                                   "Gato & Rato & Rei",
-                                  "crónica",
+                                  "crÃ³nica",
                                   "oArtigo_B.txt" );
       
       meuIndexador.indexarArtigo( "Gato branco, gato preto",
@@ -78,7 +78,7 @@ implements I_Config
       } 
       catch( FileNotFoundException e )
       {
-         System.out.println( a_nomeDoFicheiro + ": não existe Meuindexador::indexarArtigo" );
+         System.out.println( a_nomeDoFicheiro + ": nÃ£o existe Meuindexador::indexarArtigo" );
       }
       catch( Exception e )
       {
@@ -93,7 +93,7 @@ implements I_Config
    throws IOException
    {
       Document documento = new Document();
-      // Sobre título, autores e temas
+      // Sobre tÃ­tulo, autores e temas
       documento.add( new TextField( "titulo", a_titulo, Field.Store.YES ) );
       documento.add( new TextField( "autor", a_listaDeAutores, Field.Store.YES ) );
       documento.add( new TextField( "tema", a_listaDeTemas, Field.Store.YES ) );
@@ -109,7 +109,7 @@ implements I_Config
                                 l_ultimaDataDeEscrita,
                                 ft_textoCompleto ) );
       
-      // O conteúdo do documento
+      // O conteÃºdo do documento
       FieldType ft_textoModeloVectorial = new FieldType( );
       ft_textoModeloVectorial.setStoreTermVectors( true );
       ft_textoModeloVectorial.setStoreTermVectorPositions( true );

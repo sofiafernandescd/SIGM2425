@@ -83,7 +83,7 @@ implements I_Config
       System.out.print( "? > ");
       String campo = U_LeitorEscritorLinha.ler();
       
-      // Por omissão considera-se o campo "conteúdo"
+      // Por omissÃ£o considera-se o campo "conteÃºdo"
       campo = campo.trim().isEmpty() ? "conteudo" : campo;
       
       System.out.println( "%" + campo + "%" );
