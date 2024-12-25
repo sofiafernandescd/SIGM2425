@@ -130,9 +130,9 @@ implements I_Config
    private void indexarDocumento( Document documento, File a_ficheiro ) throws Exception
    {
       //PTS-2015 Analyzer analisador = new StandardAnalyzer( _VERSION, CharArraySet.EMPTY_SET );
-      Analyzer analisador = new StandardAnalyzer( CharArraySet.EMPTY_SET );
+      //Analyzer analisador = new StandardAnalyzer( CharArraySet.EMPTY_SET );
       // para tratar caracteres acentuados e eliminar "stop words" usar o "MeuAnalisador"
-      // Analyzer analisador = new MeuAnalisador( "_asMinhasStopWords.txt" );
+      Analyzer analisador = new MeuAnalisador( "_asMinhasStopWords.txt" );
 
       File dir = new File( _kDirectorioComOsIndices );
       boolean dirEmpty = ( dir.isDirectory() && ( dir.list().length == 0 ) );
