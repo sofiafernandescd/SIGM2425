@@ -50,10 +50,18 @@ WHERE ST_Relate(c.geom_paragem, z.geom_zona, '*0*******')
 SELECT * FROM ex4b;
 
 -- 4.c)
-INSERT INTO geo_0d_paragem(nome_paragem, geom_paragem) 
+
+
+-- INSERT INTO geo_0d_paragem(nome_paragem, geom_paragem) 
+
+ SELECT ST_AsText (ST_LineInterpolatePoints(c.geom_carreira, 0.3, TRUE)  )
+    FROM geo_1d_carreira AS c, ex4a as v 
+    WHERE c.nome_carreira = v.nome_carreira ;
+
+-- SELECT ST_AsText (ST_LineInterpolatePoints( SELECT geom_carreira FROM geo_1d_carreira FETCH FIRST , 0.2, TRUE)) ;
 -- VALUES ('Braço de Prata', ST_MakePoint(17.00, 10.00));
-VALUES ('Braço de Prata', ST_MakePoint(10.00, 17.00));
-SELECT * FROM geo_0d_paragem;
+-- VALUES ('Braço de Prata', ST_MakePoint(10.00, 17.00));
+-- SELECT * FROM geo_0d_paragem;
 
 
 -- 4.d)
@@ -66,11 +74,9 @@ SELECT * FROM geo_0d_paragem;
 
 -- 4.h)
 
--- 4.g)
-
--- 4.h)
 
 
+/*
 --================================================
 -- Obter Matrizes Topologicas e Objetos Geométricos
 --=================================================
@@ -146,3 +152,4 @@ FROM geo_0d_paragem p, geo_1d_carreira l;
 SELECT ST_Buffer(p.geom_paragem, 100)
 FROM geo_0d_paragem p;
 
+*/
