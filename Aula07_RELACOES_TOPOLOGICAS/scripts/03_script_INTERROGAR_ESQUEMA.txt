@@ -79,6 +79,15 @@ CREATE VIEW ex4e AS
 
 SELECT * FROM ex4e;
 -- 4.f)
+DROP VIEW IF EXISTS ex4f;
+
+CREATE VIEW ex4f AS
+SELECT c.nome_carreira, z.nome_zona FROM 
+    geo_1d_carreira AS c,
+    geo_2d_zona AS z
+WHERE ST_Relate(z.geom_zona, c.geom_carreira, 'FF2101FF2');
+
+SELECT * FROM ex4f;
 
 -- 4.g)
 
