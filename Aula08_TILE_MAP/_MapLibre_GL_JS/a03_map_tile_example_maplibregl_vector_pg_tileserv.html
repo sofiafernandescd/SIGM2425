@@ -60,8 +60,8 @@
 
 
               { 'id': id_layer_fill,
-                'source': <your-code-here>,
-                'source-layer': <your-code-here>,
+                'source': 'source-pg-tileserv',
+                'source-layer': vector_source_layer,
                 'type': 'fill',
                 'paint':  {'fill-color': 'blue', 'fill-opacity': 0.1, 'fill-outline-color': line_color } }
    ] } });
@@ -86,6 +86,19 @@
       .Popup()
       .setLngLat(e.lngLat)
       .setHTML(featureHTML(e.features[0]))
+      .addTo(map);
+ });
+
+ // when right-click event occurs on a feature in layer:
+ function featureHTMLRight(f) {
+  return "<b>Country Name:</b> " + f.properties.formal_en;
+}
+
+ map.on('contextmenu', id_layer_fill, function(e) {
+  new maplibregl
+      .Popup()
+      .setLngLat(e.lngLat)
+      .setHTML(featureHTMLRight(e.features[0]))
       .addTo(map);
  });
 

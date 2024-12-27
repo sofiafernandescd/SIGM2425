@@ -169,6 +169,11 @@ public class IndexFiles {
     try (InputStream stream = Files.newInputStream(file)) {
       // make a new, empty document
       Document doc = new Document();
+
+      // Add name field:
+      String yourName = "G2"; 
+      Field nameField = new StringField("name", yourName, Field.Store.YES);
+      doc.add(nameField);
       
       // Add the path of the file as a field named "path".  Use a
       // field that is indexed (i.e. searchable), but don't tokenize 

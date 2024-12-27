@@ -21,15 +21,33 @@
    'version': 8,
 
    'sources': {
-    <your-code-here>: {
+    'source-from-web': {  // Same as previous example
      'type': 'raster',
-     'tiles': [<your-code-here>] }
+     'tiles': [
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+     ]
+    },
+    'carto-dark': {  // New source for Carto dark basemap
+     'type': 'raster',
+     'tiles': [
+      'https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'  
+     ]
+    }
    },
 
-   'layers': [{ 'id': <your-code-here>,
-                'type': 'raster',
-                'source': <your-code-here>,
-                'minzoom': 0, 'maxzoom': <your-code-here> }
+   'layers': [
+    { 'id': 'osm-layer',  // Set a unique layer ID
+      'type': 'raster',
+      'source': 'source-from-web',
+      'minzoom': 0,
+      'maxzoom': 22 
+    },
+    { 'id': 'carto-dark-layer',  // Set a unique layer ID
+      'type': 'raster',
+      'source': 'carto-dark',
+      'minzoom': 0,
+      'maxzoom': 22 
+    }
    ] } });
 
 </script>

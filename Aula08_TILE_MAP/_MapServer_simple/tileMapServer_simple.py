@@ -27,10 +27,10 @@ PORT = 8080
 # Connectivity Constants
 # database to connect to
 DATABASE = {
-  'user':     'postgres',
+  'user':     'x@y.z', #'postgres',
   'password': 'postgres',
   'host':     'localhost',
-  'port':     '5432',
+  'port':     '5050',
   'database': 'my_gis'
   }
 
@@ -54,7 +54,7 @@ TABLE_DEFAULT = {
   KEY_LAYER_NAME:   'public.ne_50m_admin_0_countries',
   KEY_GEOM_COLUMN:  'geom',
   KEY_SRID:         '4326',
-  KEY_PROPERTIES:   'formal_en,name_pt,pop_est'
+  KEY_PROPERTIES:   'formal_en' #,name_pt,pop_est'
   }  
 
 
@@ -224,7 +224,15 @@ class TileXYZ:
   def isValid(self):
     if not self.__isDefined(): return False
     if self.format not in ['pbf', 'mvt']: return False
-    <your-code-here>
+    
+    # validate the range of XYZ coordinates (0 ≤ X and Y ≤ 2Z - 1)
+    # return ((0<=self.x) and (self.y<=2**self.z-1))
+
+    # das aulas teóricas
+    size = 2 ** self.z
+    if self.x >= size or self.y >= size: return False 
+    if self.x < 0 or self.y < 0: return False
+    return True
 
 
   # string representation of class instances
@@ -260,7 +268,10 @@ class TileEnvelope:
     # from tile coordinates (x and y) calculate geographic envelope (bounding-box)
     # notice that XYZ tile coordinates are in "image space", so:
     # - origin is top-left (not bottom-right)
-    <your-code-here>
+    self.xMin = TileEnvelope.minWorldMercator + widthTileMercator * tile.x 
+    self.xMax = TileEnvelope.minWorldMercator + widthTileMercator * (tile.x + 1) 
+    self.yMin = TileEnvelope.maxWorldMercator - widthTileMercator * (tile.y + 1) 
+    self.yMax = TileEnvelope.maxWorldMercator - widthTileMercator * tile.y
 
 
 # ______________________________________________________________________________
@@ -294,7 +305,8 @@ class SQL:
         WHERE ST_Intersects(t.{geomColumn}, ST_Transform(bounding_box.geom, {srid}))
       ) 
 
-      <your-code-here>
+      SELECT ST_AsMVT(geom_mvt, '{layerName}') AS mvt
+      FROM geom_mvt;
     """
     sql = sql.format(**parameterData)
     return sql
@@ -310,7 +322,7 @@ class SQL:
     parameterData['sizeSegment'] = (tileEnvelope.xMax - tileEnvelope.xMin) * DENSIFY_FACTOR
     sql = \
     """
-      <your-code-here>
+      ST_Segmentize(ST_MakeEnvelope({xMin}, {yMin}, {xMax}, {yMax}, 3857), {sizeSegment})
     """
     sql = sql.format(**parameterData)
     return sql
