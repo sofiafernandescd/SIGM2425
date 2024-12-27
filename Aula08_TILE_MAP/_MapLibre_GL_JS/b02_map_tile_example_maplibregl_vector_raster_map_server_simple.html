@@ -100,6 +100,10 @@
       .setHTML(featureHTML(e.features[0]))
       .addTo(map);
  });
+ // when right-click event occurs on a feature in layer:
+ function featureHTMLRight(f) {
+  return "<b>Country Name:</b> " + f.properties.formal_en;
+}
 
  // change cursor to a pointer when mouse is over the layer
  map.on('mouseenter', id_layer_fill, function() {
