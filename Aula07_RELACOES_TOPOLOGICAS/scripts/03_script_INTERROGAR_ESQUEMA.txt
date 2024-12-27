@@ -37,17 +37,11 @@ SELECT * FROM ex4a;
 
 -- 4.b)
 DROP VIEW IF EXISTS ex4b;
-CREATE VIEW old_ex4b AS
+CREATE VIEW ex4b AS
 SELECT p.nome_paragem, z.nome_zona FROM 
     geo_0d_paragem AS p,
     geo_2d_zona AS z
-WHERE ST_Relate(p.geom_paragem, z.geom_zona, '*0*******')
-;
-
-SELECT p.nome_paragem, z.nome_zona FROM 
-    geo_0d_paragem AS p,
-    geo_2d_zona AS z
-WHERE ST_Relate(p.geom_paragem, z.geom_zona, '*0*******')
+WHERE ST_Relate(z.geom_zona, p.geom_paragem, 'FF20F1FF2')
 ;
 
 SELECT * FROM ex4b;
