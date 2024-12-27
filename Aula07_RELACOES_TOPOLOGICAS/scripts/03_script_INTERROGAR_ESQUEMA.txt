@@ -26,12 +26,14 @@
 --=================================
 
 -- 4.a)
-DROP VIEW IF EXISTS ex4a;
+DROP VIEW IF EXISTS ex4a CASCADE;
+
 CREATE VIEW ex4a AS
 SELECT c.nome_carreira, z.nome_zona FROM 
     geo_1d_carreira AS c,
     geo_2d_zona AS z
 WHERE ST_Relate(c.geom_carreira, z.geom_zona, '*1*******');
+
 --WHERE
 --    ST_Relate(c.geom_carreira, z.geom_zona, 'TFFFFF0FF') OR -- Linha contida no polígono
 --    ST_Relate(c.geom_carreira, z.geom_zona, 'FTFFFFFFF');  -- Linha igual a um lado do polígono
@@ -40,31 +42,33 @@ SELECT * FROM ex4a;
 
 -- 4.b)
 DROP VIEW IF EXISTS ex4b;
+
 CREATE VIEW ex4b AS
-SELECT c.nome_paragem, z.nome_zona FROM 
-    geo_0d_paragem AS c,
+SELECT p.nome_paragem, z.nome_zona FROM 
+    geo_0d_paragem AS p,
     geo_2d_zona AS z
-WHERE ST_Relate(c.geom_paragem, z.geom_zona, '*0*******')
+WHERE ST_Relate(p.geom_paragem, z.geom_zona, '*0*******')
 ;
 
 SELECT * FROM ex4b;
 
+
+
 -- 4.c)
 
 
--- INSERT INTO geo_0d_paragem(nome_paragem, geom_paragem) 
-
- SELECT ST_AsText (ST_LineInterpolatePoints(c.geom_carreira, 0.3, TRUE)  )
-    FROM geo_1d_carreira AS c, ex4a as v 
-    WHERE c.nome_carreira = v.nome_carreira ;
-
--- SELECT ST_AsText (ST_LineInterpolatePoints( SELECT geom_carreira FROM geo_1d_carreira FETCH FIRST , 0.2, TRUE)) ;
--- VALUES ('Braço de Prata', ST_MakePoint(17.00, 10.00));
--- VALUES ('Braço de Prata', ST_MakePoint(10.00, 17.00));
--- SELECT * FROM geo_0d_paragem;
-
-
 -- 4.d)
+DROP VIEW IF EXISTS ex4d;
+CREATE VIEW ex4d AS
+    SELECT p.nome_paragem, c.nome_carreira FROM
+     geo_0d_paragem AS p,
+     geo_1d_carreira AS c,
+     ex4a AS v
+    WHERE ST_Relate(p.geom_paragem, c.geom_carreira,'0********') 
+    AND c.nome_carreira = v.nome_carreira
+    ;
+
+SELECT * FROM ex4d;
 
 -- 4.e)
 

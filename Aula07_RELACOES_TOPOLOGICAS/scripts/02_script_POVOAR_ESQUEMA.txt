@@ -27,10 +27,22 @@
 -- Geometria 0D
 --=============
 DELETE FROM geo_0d_paragem;
-INSERT INTO geo_0d_paragem (nome_paragem, geom_paragem) VALUES (
-    'Poço Bispo',
-    ST_MakePoint(10.00, 10.00)
-);
+INSERT INTO geo_0d_paragem (nome_paragem, geom_paragem) VALUES 
+    ('Poco Bispo', ST_MakePoint(10.00, 10.00)),
+    ('Xabregas', ST_MakePoint(10.00, 20.00)),
+    ('Braco Prata', ST_MakePoint(10.00, 40.00)),
+    ('Chelas', ST_MakePoint(10.00, 11.00)),
+    ('Marvila', ST_MakePoint(10.00, 16.00)),
+    ('Encarnacao', ST_MakePoint(10.00, 39.00)),
+    ('Olivais', ST_MakePoint(10.00, 11.00)),
+    ('Amendoeiras', ST_MakePoint(10.00, 14.00)),
+    ('Flamenga', ST_MakePoint(10.00, 25.00)),
+    ('Olaias', ST_MakePoint(10.00, 35.00)),
+    ('Madredeus', ST_MakePoint(10.00, 22.00)),
+    ('Oriente', ST_MakePoint(10.00, 27.00)),
+    ('Alfragide', ST_MakePoint(8.00, 38.00)),
+    ('Cascais', ST_MakePoint(6.00, 12.00))
+;
 
 SELECT * FROM geo_0d_paragem;
 
