@@ -16,17 +16,16 @@
 --==========================
 
 
-
 --______________________________________________
 -- AJUSTAR DE ACORDO COM O CENARIO QUE IDEALIZOU
 ------------------------------------------------
-
 
 
 --=============
 -- Geometria 0D
 --=============
 DELETE FROM geo_0d_paragem;
+
 INSERT INTO geo_0d_paragem (nome_paragem, geom_paragem) VALUES (
     'Poço Bispo',
     ST_MakePoint(10.00, 10.00)
@@ -41,6 +40,7 @@ SELECT * FROM geo_0d_paragem;
 -- Geometria 1D
 --=============
 DELETE FROM geo_1d_carreira;
+
 INSERT INTO geo_1d_carreira (nome_carreira, geom_carreira) VALUES 
     ('C755', ST_GeomFromText('LINESTRING( 10.00 10.00, 10.00 40.00)', 4326)),
     ('C756', ST_GeomFromText('LINESTRING( 10.00 11.00, 10.00 39.00)', 4326)),
@@ -48,9 +48,7 @@ INSERT INTO geo_1d_carreira (nome_carreira, geom_carreira) VALUES
     ('C758', ST_GeomFromText('LINESTRING( 11.00 33.00, 15.00 33.00)', 4326)),
     ('C759', ST_GeomFromText('LINESTRING( 10.00 11.00, 10.00 25.00, 15.00 25.00)', 4326)),
     ('C760', ST_GeomFromText('LINESTRING( 10.00 35.00, 11.00 35.00)', 4326))
-
 ;
-
 
 SELECT * FROM geo_1d_carreira;
 
@@ -60,7 +58,22 @@ SELECT * FROM geo_1d_carreira;
 -- Geometria 2D
 --=============
 DELETE FROM geo_2d_zona;
+
 INSERT INTO geo_2d_zona (nome_zona, geom_zona) VALUES
 ('Marvila', ST_GeomFromText('POLYGON((10.00 10.00, 10.00 40.00, 20.00 30.00, 10.00 10.00))', 4326));
 
 SELECT * FROM geo_2d_zona;
+
+
+-- 3.b)
+INSERT INTO geo_0d_paragem(nome_paragem, geom_paragem) 
+VALUES ('Chelas', ST_MakePoint(10.00, 20.00));
+
+INSERT INTO geo_0d_paragem(nome_paragem, geom_paragem) 
+VALUES ('Campo Grande Metro', ST_MakePoint(17.00, 10.00));
+
+INSERT INTO geo_1d_carreira (nome_carreira, geom_carreira) VALUES 
+('C750', ST_GeomFromText('LINESTRING( 10.00 20.00, 17.00 10.00)', 4326));
+
+INSERT INTO geo_2d_zona (nome_zona, geom_zona) VALUES
+('Campo Grande', ST_GeomFromText('POLYGON((20.00 30.00, 10.00 10.00, 17.00 10.00, 20.00 30.00))', 4326));

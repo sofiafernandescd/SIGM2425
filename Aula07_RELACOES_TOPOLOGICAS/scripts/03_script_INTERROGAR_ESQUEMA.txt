@@ -32,27 +32,30 @@ SELECT c.nome_carreira, z.nome_zona FROM
     geo_1d_carreira AS c,
     geo_2d_zona AS z
 WHERE ST_Relate(c.geom_carreira, z.geom_zona, '*1*******');
---WHERE
---    ST_Relate(c.geom_carreira, z.geom_zona, 'TFFFFF0FF') OR -- Linha contida no polígono
---    ST_Relate(c.geom_carreira, z.geom_zona, 'FTFFFFFFF');  -- Linha igual a um lado do polígono
 
 SELECT * FROM ex4a;
 
 -- 4.b)
 DROP VIEW IF EXISTS ex4b;
-CREATE VIEW ex4b AS
-SELECT c.nome_paragem, z.nome_zona FROM 
-    geo_0d_paragem AS c,
+CREATE VIEW old_ex4b AS
+SELECT p.nome_paragem, z.nome_zona FROM 
+    geo_0d_paragem AS p,
     geo_2d_zona AS z
-WHERE ST_Relate(c.geom_paragem, z.geom_zona, '*0*******')
+WHERE ST_Relate(p.geom_paragem, z.geom_zona, '*0*******')
+;
+
+SELECT p.nome_paragem, z.nome_zona FROM 
+    geo_0d_paragem AS p,
+    geo_2d_zona AS z
+WHERE ST_Relate(p.geom_paragem, z.geom_zona, '*0*******')
 ;
 
 SELECT * FROM ex4b;
 
 -- 4.c)
 INSERT INTO geo_0d_paragem(nome_paragem, geom_paragem) 
--- VALUES ('Braço de Prata', ST_MakePoint(17.00, 10.00));
 VALUES ('Braço de Prata', ST_MakePoint(10.00, 17.00));
+
 SELECT * FROM geo_0d_paragem;
 
 

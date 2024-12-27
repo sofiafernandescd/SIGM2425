@@ -20,6 +20,9 @@ import org.apache.lucene.analysis.standard.StandardFilter;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.util.Version;
 import org.apache.lucene.analysis.miscellaneous.ASCIIFoldingFilter;
+import org.apache.lucene.analysis.pt.PortugueseStemFilter;
+import org.apache.lucene.analysis.pt.PortugueseAnalyzer;
+
 
 
 public class MeuAnalisador
@@ -62,9 +65,12 @@ extends Analyzer
 
       resultado = new StandardFilter( fonte );
       // para tratar caracteres acentuados usar o ASCIIFoldingFilter
-      // resultado = new ASCIIFoldingFilter( resultado );
+      resultado = new ASCIIFoldingFilter( resultado );
       resultado = new LowerCaseFilter( resultado );
       resultado = new StopFilter( resultado, _conjunto_stopWords );
+      // stemming
+      resultado = new PortugueseStemFilter(resultado);
+
 
       return new TokenStreamComponents( fonte, resultado );
     }
