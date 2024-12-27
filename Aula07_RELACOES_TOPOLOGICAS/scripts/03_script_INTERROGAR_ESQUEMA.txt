@@ -69,12 +69,22 @@ CREATE VIEW ex4d AS
      ex4a AS v
     WHERE ST_Relate(p.geom_paragem, c.geom_carreira,'0********') 
     AND c.nome_carreira = v.nome_carreira
+    GROUP BY p.nome_paragem, c.nome_carreira
     ;
 
 SELECT * FROM ex4d;
 
 -- 4.e)
+DROP VIEW IF EXISTS ex4e;
+CREATE VIEW ex4e AS
+    SELECT a.nome_carreira FROM
+     geo_1d_carreira AS a,
+     geo_1d_carreira AS c
+     WHERE ST_Relate(a.geom_carreira, c.geom_carreira,'1********') 
+     GROUP BY a.nome_carreira
+    ;
 
+SELECT * FROM ex4e;
 -- 4.f)
 
 -- 4.g)
