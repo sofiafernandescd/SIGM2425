@@ -82,22 +82,26 @@ SELECT * FROM ex4e;
 DROP VIEW IF EXISTS ex4f;
 
 CREATE VIEW ex4f AS
-SELECT c.nome_carreira, z.nome_zona FROM 
+SELECT c.nome_carreira FROM
     geo_1d_carreira AS c,
     geo_2d_zona AS z
-WHERE ST_Relate(z.geom_zona, c.geom_carreira, 'FF2101FF2');
+WHERE ST_Relate(c.geom_carreira,z.geom_zona,  '1********');
 
 SELECT * FROM ex4f;
 
 -- 4.g)
 
 -- 4.h)
+CREATE VIEW ex4h AS
+SELECT c.nome_carreira FROM
+    geo_1d_carreira AS c,
+    geo_2d_zona AS z
+WHERE ST_Relate(c.geom_carreira,z.geom_zona,  '1*1******');
 
--- 4.g)
-
--- 4.h)
+SELECT * FROM ex4h;
 
 
+/*
 --================================================
 -- Obter Matrizes Topologicas e Objetos Geométricos
 --=================================================
@@ -173,3 +177,4 @@ FROM geo_0d_paragem p, geo_1d_carreira l;
 SELECT ST_Buffer(p.geom_paragem, 100)
 FROM geo_0d_paragem p;
 
+*/

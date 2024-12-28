@@ -38,7 +38,7 @@ INSERT INTO geo_0d_paragem (nome_paragem, geom_paragem) VALUES
     ('Olaias', ST_MakePoint(10.00, 35.00)),
     ('Madredeus', ST_MakePoint(10.00, 22.00)),
     ('Oriente', ST_MakePoint(10.00, 27.00)),
-    ('Alfragide', ST_MakePoint(8.00, 38.00)),
+    ('AlfragCide', ST_MakePoint(8.00, 38.00)),
     ('Cascais', ST_MakePoint(6.00, 12.00))
 ;
 
