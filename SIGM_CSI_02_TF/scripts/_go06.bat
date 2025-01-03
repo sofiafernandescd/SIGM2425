@@ -1,1 +1,0 @@
-_go 06_script_SIMULAR_PERSEGUICAO.txt
