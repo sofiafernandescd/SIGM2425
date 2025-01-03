@@ -89,14 +89,14 @@ CREATE OPERATOR + (
 CREATE OR REPLACE FUNCTION novo_posicao(posicao geometry, velocidade t_velocidade, tempo REAL)
 RETURNS geometry AS $$
 BEGIN
-    RETURN ST_Translate(posicao, velocidade.linear.x * tempo, velocidade.linear.y * tempo);
+    RETURN ST_Translate(posicao, (velocidade.linear).x * tempo, (velocidade.linear).y * tempo);
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION novo_orientacao(orientacao REAL, velocidade t_velocidade, tempo REAL)
 RETURNS REAL AS $$
 BEGIN
-    RETURN orientacao + velocidade.angular * tempo;
+    RETURN orientacao + (velocidade.angular) * tempo;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -105,9 +105,9 @@ RETURNS t_velocidade AS $$
 DECLARE
     nova_vel t_velocidade;
 BEGIN
-    nova_vel.linear.x := velocidade.linear.x + aceleracao.linear.x * tempo;
-    nova_vel.linear.y := velocidade.linear.y + aceleracao.linear.y * tempo;
-    nova_vel.angular := velocidade.angular + aceleracao.angular * tempo;
+    nova_vel.linear.x := (velocidade.linear).x + (aceleracao.linear).x * tempo; -- Correção AQUI
+    nova_vel.linear.y := (velocidade.linear).y + (aceleracao.linear).y * tempo; -- Correção AQUI
+    nova_vel.angular := (velocidade.angular) + (aceleracao.angular) * tempo; -- Correção AQUI
     RETURN nova_vel;
 END;
 $$ LANGUAGE plpgsql;
@@ -332,13 +332,33 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Funções de Perseguição
+------------------------
+CREATE OR REPLACE FUNCTION obter_aceleracao_perseguidor(perseguidor_id INTEGER, alvo_id INTEGER, velocidade_a_perseguir REAL)
+RETURNS t_aceleracao AS $$
+DECLARE
+    posicao_perseguidor geometry;
+    posicao_alvo geometry;
+    direcao t_vector;
+    aceleracao t_aceleracao;
+BEGIN
+    SELECT posicao INTO posicao_perseguidor FROM trajetoria WHERE objeto_id = perseguidor_id ORDER BY timestamp DESC LIMIT 1;
+    SELECT posicao INTO posicao_alvo FROM trajetoria WHERE objeto_id = alvo_id ORDER BY timestamp DESC LIMIT 1;
+
+    direcao := normalizar(ROW(ST_X(posicao_alvo) - ST_X(posicao_perseguidor), ST_Y(posicao_alvo) - ST_Y(posicao_perseguidor))::t_vector);
+    aceleracao.linear := produto_vector_por_escalar(direcao, velocidade_a_perseguir);
+    aceleracao.angular := 0; -- Por enquanto, aceleração angular zero (pode ser implementada depois)
+    RETURN aceleracao;
+END;
+$$ LANGUAGE plpgsql;
 
 
 
+-- Função de Simulação (COMPLETAMENTE CORRIGIDA)
 CREATE OR REPLACE FUNCTION simular_passo(perseguidor_id INTEGER, alvo_id INTEGER, tempo REAL)
 RETURNS VOID AS $$
 DECLARE
-    objeto_atual RECORD; -- Registro para armazenar os dados do objeto
+    objeto_atual RECORD;
     aceleracao_calculada t_aceleracao;
     tipo_objeto RECORD;
     nova_velocidade t_velocidade;
@@ -347,61 +367,56 @@ DECLARE
     modificador_terreno REAL := 1.0;
     terreno RECORD;
     rio RECORD;
-    ultima_trajetoria RECORD;
 BEGIN
-    -- Obter dados atuais do perseguidor (CORREÇÃO AQUI)
-    SELECT velocidade, orientacao INTO objeto_atual
+    SELECT velocidade, orientacao, centro_de_massa INTO objeto_atual
     FROM objeto
     WHERE id_objeto = perseguidor_id;
 
-    -- Verificar se o objeto foi encontrado
     IF NOT FOUND THEN
         RAISE NOTICE 'Objeto com ID % não encontrado!', perseguidor_id;
-        RETURN; -- Sai da função se o objeto não existir
+        RETURN;
     END IF;
 
     SELECT * INTO tipo_objeto FROM tipo_objeto WHERE id_tipo_objeto = (SELECT tipo_objeto_id FROM objeto WHERE id_objeto = perseguidor_id);
 
-    -- Calcular aceleração de perseguição
     aceleracao_calculada := obter_aceleracao_perseguidor(perseguidor_id, alvo_id, tipo_objeto.max_aceleracao_linear);
 
-    -- Calcular novos valores
-    nova_velocidade := novo_velocidade(objeto_atual.velocidade, aceleracao_calculada, tempo);--, tipo_objeto.max_velocidade_linear, tipo_objeto.max_velocidade_angular);
-    nova_orientacao := novo_orientacao(objeto_atual.orientacao, nova_velocidade, tempo::INTEGER);
+    nova_velocidade := novo_velocidade(objeto_atual.velocidade, aceleracao_calculada, tempo);
+    nova_orientacao := novo_orientacao(objeto_atual.orientacao, nova_velocidade, tempo);
 
-    -- Obter a última trajetória (tratamento para a primeira iteração)
-    SELECT * INTO ultima_trajetoria FROM trajetoria WHERE objeto_id = perseguidor_id ORDER BY timestamp DESC LIMIT 1;
-    IF NOT FOUND THEN
-        -- Se não houver trajetórias, usa o centro de massa do objeto como posição inicial
-        SELECT centro_de_massa INTO nova_posicao FROM objeto WHERE id_objeto = perseguidor_id;
-    ELSE
-        nova_posicao := ultima_trajetoria.posicao;
-    END IF;
+    -- Correção CRUCIAL: Usar o centro_de_massa *atual* SEMPRE.
+    nova_posicao := objeto_atual.centro_de_massa;
 
-    -- Calcular modificador de terreno (incluindo rios)
+    -- Aplicar modificador de terreno (ANTES do cálculo da nova posição)
     FOR terreno IN SELECT * FROM terreno WHERE ST_Contains(g_terreno, nova_posicao) LOOP
         SELECT percent_modif_tipo_terreno INTO modificador_terreno FROM tipo_terreno WHERE id_tipo_terreno = terreno.tipo_terreno_id;
-        EXIT; -- Assume apenas um terreno por vez
+        EXIT;
     END LOOP;
 
     FOR rio IN SELECT * FROM rio WHERE ST_Intersects(g_caudal, nova_posicao) LOOP
         modificador_terreno := modificador_terreno * rio.percent_modif_rio;
-        EXIT; -- Assume apenas um rio por vez
+        EXIT;
     END LOOP;
 
-    -- Aplicar modificador de terreno à velocidade linear
     nova_velocidade.linear := produto_vector_por_escalar(nova_velocidade.linear, modificador_terreno);
 
-    -- Calcular nova posição (APÓS aplicar o modificador)
-    nova_posicao := novo_posicao(nova_posicao, nova_velocidade, nova_orientacao);
+    -- Calcular nova posição (USANDO a velocidade modificada)
+    nova_posicao := novo_posicao(nova_posicao, nova_velocidade, tempo);
 
-    -- Atualizar objeto com nova velocidade e orientação
-    UPDATE objeto SET velocidade = nova_velocidade, orientacao = nova_orientacao WHERE id_objeto = perseguidor_id;
+    -- Atualizar objeto com nova velocidade, orientação E CENTRO DE MASSA
+    UPDATE objeto SET velocidade = nova_velocidade, orientacao = nova_orientacao, centro_de_massa = nova_posicao
+    WHERE id_objeto = perseguidor_id;
 
     -- Inserir nova trajetória com timestamp
-    INSERT INTO trajetoria (objeto_id, timestamp, posicao, orientacao, velocidade_linear, velocidade_angular, aceleracao_linear, aceleracao_angular)
-    VALUES (perseguidor_id, clock_timestamp(), nova_posicao, nova_orientacao, nova_velocidade.linear, nova_velocidade.angular, aceleracao_calculada.linear, aceleracao_calculada.angular);
-
+    INSERT INTO trajetoria (
+        objeto_id, timestamp, posicao, orientacao,
+        velocidade_linear, velocidade_angular,
+        aceleracao_linear, aceleracao_angular
+    ) VALUES (
+        perseguidor_id, clock_timestamp(), nova_posicao, nova_orientacao,
+        nova_velocidade.linear, nova_velocidade.angular,
+        aceleracao_calculada.linear, aceleracao_calculada.angular
+    );
 END;
 $$ LANGUAGE plpgsql;
 
