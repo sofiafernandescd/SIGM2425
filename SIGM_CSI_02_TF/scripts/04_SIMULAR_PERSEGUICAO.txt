@@ -35,8 +35,8 @@ RETURNS geometry AS $$
 BEGIN
 
     RETURN ST_Translate(posicao, 
-        (velocidade.linear).x * tempo, 
-        (velocidade.linear).y * tempo);
+        mod((velocidade.linear).x * tempo, 100), 
+        mod((velocidade.linear).y * tempo, 100);
 END;
 $$ LANGUAGE plpgsql;
 
