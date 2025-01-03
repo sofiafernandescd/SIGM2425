@@ -51,30 +51,28 @@ INSERT INTO tipo_objeto (nome, max_velocidade_linear, max_velocidade_angular, ma
 ('Jipe', 8, 1.5, 4, 0.8); -- Novo tipo de objeto
 
 -- Inserir objetos para 3 perseguições distintas
-INSERT INTO objeto (tipo_objeto_id, g_objeto) VALUES
-(1, ST_GeomFromText('POINT(2 2)', 3763)),   -- Perseguidor 1: Carro na Praça Central
-(3, ST_GeomFromText('POINT(28 28)', 3763)), -- Alvo 1: Drone na Praça Central (perseguição 1)
-(4, ST_GeomFromText('POINT(37 12)', 3763)), -- Perseguidor 2: Jipe no Bosque Norte
-(1, ST_GeomFromText('POINT(48 22)', 3763)), -- Alvo 2: Carro no Bosque Norte (perseguição 2)
-(2, ST_GeomFromText('POINT(3 42)', 3763)),   -- Perseguidor 3: Barco no Campo de Relva (perto do rio)
-(3, ST_GeomFromText('POINT(18 42)', 3763)); -- Alvo 3: Drone no Campo de Relva (perseguição 3)
+WITH objetos_inseridos AS (
+    INSERT INTO objeto (tipo_objeto_id, g_objeto, centro_de_massa) 
+    VALUES
+    (1, ST_GeomFromText('POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))', 3763), ST_Centroid(ST_GeomFromText('POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))', 3763))),
+    (3, ST_GeomFromText('POLYGON((27 27, 29 27, 29 29, 27 29, 27 27))', 3763), ST_Centroid(ST_GeomFromText('POLYGON((27 27, 29 27, 29 29, 27 29, 27 27))', 3763))),
+    (4, ST_GeomFromText('POLYGON((36 11, 38 11, 38 13, 36 13, 36 11))', 3763), ST_Centroid(ST_GeomFromText('POLYGON((36 11, 38 11, 38 13, 36 13, 36 11))', 3763))),
+    (1, ST_GeomFromText('POLYGON((47 21, 49 21, 49 23, 47 23, 47 21))', 3763), ST_Centroid(ST_GeomFromText('POLYGON((47 21, 49 21, 49 23, 47 23, 47 21))', 3763))),
+    (2, ST_GeomFromText('POLYGON((2 41, 4 41, 4 43, 2 43, 2 41))', 3763), ST_Centroid(ST_GeomFromText('POLYGON((2 41, 4 41, 4 43, 2 43, 2 41))', 3763))),
+    (3, ST_GeomFromText('POLYGON((17 41, 19 41, 19 43, 17 43, 17 41))', 3763), ST_Centroid(ST_GeomFromText('POLYGON((17 41, 19 41, 19 43, 17 43, 17 41))', 3763)))
+    RETURNING id_objeto, centro_de_massa
+)
 
 -- Inserir dados iniciais na tabela trajetoria para todos os objetos
-INSERT INTO trajetoria (objeto_id, posicao, orientacao, velocidade_linear, velocidade_angular, aceleracao_linear, aceleracao_angular) VALUES
-(1, ST_GeomFromText('POINT(2 2)', 3763), 0, ROW(0.0, 0.0)::t_vector, 0, ROW(0.0, 0.0)::t_vector, 0), -- Perseguidor 1
-(2, ST_GeomFromText('POINT(28 28)', 3763), 0, ROW(0.0, 0.0)::t_vector, 0, ROW(0.0, 0.0)::t_vector, 0), -- Alvo 1
-(3, ST_GeomFromText('POINT(37 12)', 3763), 0, ROW(0.0, 0.0)::t_vector, 0, ROW(0.0, 0.0)::t_vector, 0), -- Perseguidor 2
-(4, ST_GeomFromText('POINT(48 22)', 3763), 0, ROW(0.0, 0.0)::t_vector, 0, ROW(0.0, 0.0)::t_vector, 0), -- Alvo 2
-(5, ST_GeomFromText('POINT(3 42)', 3763), 0, ROW(0.0, 0.0)::t_vector, 0, ROW(0.0, 0.0)::t_vector, 0), -- Perseguidor 3
-(6, ST_GeomFromText('POINT(18 42)', 3763), 0, ROW(0.0, 0.0)::t_vector, 0, ROW(0.0, 0.0)::t_vector, 0); -- Alvo 3
+INSERT INTO trajetoria (objeto_id, posicao, orientacao, velocidade_linear, velocidade_angular, aceleracao_linear, aceleracao_angular)
+SELECT
+    id_objeto,
+    ST_GeomFromText('POINT(' || ST_X(centro_de_massa) || ' ' || ST_Y(centro_de_massa) || ')', 3763), -- Posição do centro de massa
+    0, ROW(0.0, 0.0)::t_vector, 0, ROW(0.0, 0.0)::t_vector, 0
+FROM objetos_inseridos;
 
 -- Inserir as 3 perseguições
 INSERT INTO perseguicao (perseguidor_id, alvo_id, distancia) VALUES
 (1, 2, ST_Distance( (SELECT posicao from trajetoria where objeto_id = 1 order by timestamp desc limit 1), (SELECT posicao from trajetoria where objeto_id = 2 order by timestamp desc limit 1) )), -- Perseguição 1
 (3, 4, ST_Distance( (SELECT posicao from trajetoria where objeto_id = 3 order by timestamp desc limit 1), (SELECT posicao from trajetoria where objeto_id = 4 order by timestamp desc limit 1) )), -- Perseguição 2
 (5, 6, ST_Distance( (SELECT posicao from trajetoria where objeto_id = 5 order by timestamp desc limit 1), (SELECT posicao from trajetoria where objeto_id = 6 order by timestamp desc limit 1) )); -- Perseguição 3
-
-
-
-
-

@@ -1,0 +1,157 @@
+--=============
+-- Ligacao a BD
+--=============
+\set dataBase aug_real_db
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+-----------------------------------------
+ -- Funções de Cinemática e Perseguição
+----------------------------------------
+
+CREATE OR REPLACE FUNCTION normalizar( vec t_vector )
+RETURNS t_vector
+AS $$
+DECLARE
+  norma real;
+BEGIN
+  norma := sqrt(power(vec.x, 2) + power(vec.y, 2));
+  RETURN vec/norma;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION novo_posicao(posicao geometry, velocidade t_velocidade, tempo REAL)
+RETURNS geometry AS $$
+BEGIN
+    RETURN ST_Translate(posicao, 
+        mod(((velocidade.linear).x * tempo)::INTEGER, 100), 
+        mod(((velocidade.linear).y * tempo)::INTEGER, 100));
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION novo_orientacao(orientacao REAL, velocidade t_velocidade, tempo REAL)
+RETURNS REAL AS $$
+BEGIN
+    RETURN orientacao + (velocidade.angular) * tempo;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real, max_vel_lin real, max_vel_ang real)
+RETURNS t_velocidade AS $$
+DECLARE
+    nova_vel t_velocidade;
+    vel_lin_mag REAL;
+BEGIN
+    nova_vel.linear := velocidade.linear + aceleracao.linear * tempo;
+    nova_vel.angular := (velocidade.angular) + (aceleracao.angular) * tempo;
+
+    -- Aplicar restrição de velocidade LINEAR
+    vel_lin_mag := sqrt((nova_vel.linear).x^2 + (nova_vel.linear).y^2);
+    IF vel_lin_mag > max_vel_lin THEN
+        nova_vel.linear := (nova_vel.linear / vel_lin_mag) * max_vel_lin;
+    END IF;
+
+    -- Aplicar restrição de velocidade ANGULAR
+    IF abs(nova_vel.angular) > max_vel_ang THEN
+        nova_vel.angular := SIGN(nova_vel.angular) * max_vel_ang;
+    END IF;
+
+    RETURN nova_vel;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION obter_aceleracao_perseguidor(
+    perseguidor_id INTEGER, 
+    alvo_id INTEGER, 
+    velocidade_a_perseguir REAL, 
+    max_aceleracao_angular REAL
+)
+RETURNS t_aceleracao AS $$
+DECLARE
+    posicao_perseguidor geometry;
+    posicao_alvo geometry;
+    direcao t_vector;
+    angulo_alvo REAL;
+    angulo_perseguidor REAL;
+    diferenca_angular REAL;
+    aceleracao t_aceleracao;
+BEGIN
+    -- Ultima posicao do perseguidor
+    SELECT posicao INTO posicao_perseguidor 
+    FROM trajetoria 
+    WHERE objeto_id = perseguidor_id 
+    ORDER BY timestamp DESC LIMIT 1;
+    -- Ultima posicao do alvo
+    SELECT posicao INTO posicao_alvo 
+    FROM trajetoria 
+    WHERE objeto_id = alvo_id 
+    ORDER BY timestamp DESC LIMIT 1;
+    -- Ultima orientacao do perseguidor
+    SELECT orientacao INTO angulo_perseguidor 
+    FROM objeto 
+    WHERE id_objeto = perseguidor_id;
+
+    -- Calcular direcao do vetor para o alvo
+    direcao := normalizar(ROW(ST_X(posicao_alvo) - ST_X(posicao_perseguidor), ST_Y(posicao_alvo) - ST_Y(posicao_perseguidor))::t_vector);
+    aceleracao.linear := produto_vector_por_escalar(direcao, velocidade_a_perseguir);
+
+    -- Calcular ângulo até ao alvo 
+    angulo_alvo := degrees(atan2(ST_Y(posicao_alvo) - ST_Y(posicao_perseguidor), ST_X(posicao_alvo) - ST_X(posicao_perseguidor)));
+
+    -- Calcular a diferença angular (considerando a direção atual do perseguidor)
+    diferenca_angular := angulo_alvo - angulo_perseguidor;
+
+    -- Ajustar a diferença angular para o intervalo [-180, 180]
+    WHILE diferenca_angular > 180 LOOP
+        diferenca_angular := diferenca_angular - 360;
+    END LOOP;
+    WHILE diferenca_angular < -180 LOOP
+        diferenca_angular := diferenca_angular + 360;
+    END LOOP;
+
+    -- Converter a diferença angular para aceleração angular (limitada ao máximo)
+    aceleracao.angular := LEAST(GREATEST(diferenca_angular, -max_aceleracao_angular), max_aceleracao_angular);
+
+    RETURN aceleracao;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION calcular_modificador_terreno(posicao geometry)
+RETURNS REAL AS $$
+DECLARE
+    modificador REAL := 1.0;
+    rio RECORD;
+    menor_terreno RECORD;
+BEGIN
+    -- Verificar se está em um rio (prioridade)
+    FOR rio IN SELECT * FROM rio WHERE ST_Intersects(g_caudal, posicao) LOOP
+        modificador := rio.percent_modif_rio;
+        RETURN modificador; -- Sai imediatamente se encontrar um rio
+    END LOOP;
+
+    -- Caso não esteja em um rio, encontrar o menor terreno que contém a posição
+    SELECT * INTO menor_terreno
+    FROM terreno
+    WHERE ST_Contains(g_terreno, posicao)
+    ORDER BY area ASC
+    LIMIT 1;
+
+    IF menor_terreno IS NOT NULL THEN
+        SELECT percent_modif_tipo_terreno INTO modificador 
+        FROM tipo_terreno 
+        WHERE id_tipo_terreno = menor_terreno.tipo_terreno_id;
+    END IF;
+
+    RETURN modificador;
+END;
+$$ LANGUAGE plpgsql;
+
+

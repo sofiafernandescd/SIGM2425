@@ -1,0 +1,110 @@
+--=============
+-- Ligacao a BD
+--=============
+\set dataBase aug_real_db
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+------------------------
+-- Função simular_passo
+-------------------------
+CREATE OR REPLACE FUNCTION simular_passo(perseguidor_id INTEGER, alvo_id INTEGER, tempo REAL)
+RETURNS VOID AS $$
+DECLARE
+    objeto_atual RECORD;
+    terreno RECORD;
+    rio RECORD;
+    aceleracao_calculada t_aceleracao;
+    tipo_objeto RECORD;
+    nova_velocidade t_velocidade;
+    nova_orientacao REAL;
+    nova_posicao geometry;
+    novo_g_objeto geometry;
+    modificador_terreno REAL := 1.0;
+BEGIN
+    -- Objeto atual
+    SELECT velocidade, orientacao, centro_de_massa, g_objeto INTO objeto_atual
+    FROM objeto
+    WHERE id_objeto = perseguidor_id;
+
+    IF NOT FOUND THEN
+        RAISE NOTICE 'Objeto com ID % não encontrado!', perseguidor_id;
+        RETURN;
+    END IF;
+
+    -- Tipo de objeto
+    SELECT * INTO tipo_objeto FROM tipo_objeto 
+    WHERE id_tipo_objeto = (SELECT tipo_objeto_id FROM objeto WHERE id_objeto = perseguidor_id);
+
+    -- Obter aceleracao do perseguidor
+    aceleracao_calculada := obter_aceleracao_perseguidor(perseguidor_id, alvo_id, tipo_objeto.max_aceleracao_linear, tipo_objeto.max_aceleracao_angular);
+
+    -- Calcular nova velocidade do perseguidor com base na aceleracao
+    nova_velocidade := novo_velocidade(objeto_atual.velocidade, aceleracao_calculada, tempo, tipo_objeto.max_velocidade_linear, tipo_objeto.max_velocidade_angular);
+    
+    -- Calcular nova orientacao do perseguidor
+    nova_orientacao := novo_orientacao(objeto_atual.orientacao, nova_velocidade, tempo);
+
+    -- Aplicar modificador de terreno (ANTES do cálculo da nova posição)
+    modificador_terreno := calcular_modificador_terreno(objeto_atual.centro_de_massa);
+    /*FOR terreno IN SELECT * FROM terreno WHERE ST_Contains(g_terreno, nova_posicao) LOOP
+        SELECT percent_modif_tipo_terreno INTO modificador_terreno FROM tipo_terreno WHERE id_tipo_terreno = terreno.tipo_terreno_id;
+        EXIT;
+    END LOOP;
+
+    FOR rio IN SELECT * FROM rio WHERE ST_Intersects(g_caudal, nova_posicao) LOOP
+        modificador_terreno := modificador_terreno * rio.percent_modif_rio;
+        EXIT;
+    END LOOP;*/
+
+    nova_velocidade.linear := nova_velocidade.linear * modificador_terreno;
+
+    -- Calcular nova posição (com a velocidade modificada)
+    nova_posicao := novo_posicao(objeto_atual.centro_de_massa, nova_velocidade, tempo);
+
+    -- Atualizar geometria do objeto
+    novo_g_objeto := ST_Translate(
+        objeto_atual.g_objeto, 
+        ST_X(nova_posicao) - ST_X(objeto_atual.centro_de_massa), 
+        ST_Y(nova_posicao) - ST_Y(objeto_atual.centro_de_massa)
+    );
+
+    -- Detetar colisão
+    IF ST_Intersects(nova_posicao, (SELECT centro_de_massa FROM objeto WHERE id_objeto = alvo_id)) THEN
+        RAISE NOTICE 'COLISÃO DETETADA entre % e %!', perseguidor_id, alvo_id;
+        nova_velocidade.linear.x := 0;
+        nova_velocidade.linear.y := 0;
+        nova_velocidade.angular := 0;
+    END IF;
+
+    -- Atualizar objeto com nova geometris, velocidade, orientação e centro de massa
+    UPDATE objeto 
+    SET g_objeto = novo_g_objeto, centro_de_massa = nova_posicao, velocidade = nova_velocidade, orientacao = nova_orientacao
+    WHERE id_objeto = perseguidor_id;
+
+    -- Inserir nova trajetória com timestamp
+    INSERT INTO trajetoria (
+        objeto_id, timestamp, posicao, orientacao,
+        velocidade_linear, velocidade_angular,
+        aceleracao_linear, aceleracao_angular
+    ) VALUES (
+        perseguidor_id, clock_timestamp(), nova_posicao, nova_orientacao,
+        nova_velocidade.linear, nova_velocidade.angular,
+        aceleracao_calculada.linear, aceleracao_calculada.angular
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+DO $$
+BEGIN
+    FOR i IN 1..30 LOOP
+        PERFORM simular_passo(1, 2, 0.1);
+        PERFORM simular_passo(3, 4, 0.1);
+        PERFORM simular_passo(5, 6, 0.1);
+    END LOOP;
+END $$;

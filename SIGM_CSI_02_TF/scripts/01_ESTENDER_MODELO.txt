@@ -13,6 +13,19 @@
 ;
 --==========================
 --==========================
+DROP OPERATOR IF EXISTS / (t_vector, real);
+DROP OPERATOR IF EXISTS * (t_vector, real);
+DROP OPERATOR IF EXISTS - (t_vector, t_vector);
+DROP OPERATOR IF EXISTS + (t_vector, t_vector);
+
+DROP FUNCTION IF EXISTS divisao_vector_por_escalar(t_vector, real);
+DROP FUNCTION IF EXISTS produto_vector_por_escalar(t_vector, real);
+DROP FUNCTION IF EXISTS subtracao_vector_vector(t_vector, t_vector);
+DROP FUNCTION IF EXISTS soma_vector_vector(t_vector, t_vector);
+
+DROP TYPE IF EXISTS t_aceleracao;
+DROP TYPE IF EXISTS t_velocidade;
+DROP TYPE IF EXISTS t_vector;
 
 ----------------------------------------------------
 ----------------------------------------------------
@@ -81,15 +94,21 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION divisao_vector_por_escalar( vec t_vector, v real )
+CREATE OR REPLACE FUNCTION divisao_vector_por_escalar(vec t_vector, v real)
 RETURNS t_vector
 AS $$
 DECLARE
     new_x real;
     new_y real;
 BEGIN
-    new_x := vec.x / v;
-    new_y := vec.y / v;
+    IF v = 0 THEN
+        -- Retornar um vetor nulo ou lançar um erro, dependendo do que é apropriado
+        RAISE EXCEPTION 'Divisão por zero não é permitida no divisor escalar.';
+    ELSE
+        new_x := vec.x / v;
+        new_y := vec.y / v;
+    END IF;
+
     RETURN (new_x, new_y);
 END;
 $$ LANGUAGE plpgsql;
@@ -124,3 +143,4 @@ CREATE OPERATOR / (
     procedure = divisao_vector_por_escalar,
     commutator = /
 );
+
