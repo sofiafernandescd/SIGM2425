@@ -63,7 +63,10 @@ CREATE TABLE objeto (
     tipo_objeto_id INTEGER REFERENCES tipo_objeto(id_tipo_objeto),
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     g_objeto GEOMETRY(GEOMETRY, 3763), --atualiza com trajetoria
-    centro_de_massa GEOMETRY(POINT, 3763) --atualiza com g_objeto
+    centro_de_massa GEOMETRY(POINT, 3763), --atualiza com g_objeto
+    velocidade t_velocidade NOT NULL DEFAULT ROW((0,0), 0)::t_velocidade, -- ADICIONADO AQUI
+    orientacao REAL NOT NULL DEFAULT 0 -- ADICIONADO AQUI
+
 );
 
 CREATE TABLE trajetoria (
@@ -94,7 +97,7 @@ CREATE INDEX idx_trajetoria_posicao ON trajetoria USING GIST (posicao);
 CREATE OR REPLACE FUNCTION calcular_area_terreno()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.area = ST_Area(NEW.geo);
+    NEW.area = ST_Area(NEW.g_terreno);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -108,17 +111,6 @@ CREATE OR REPLACE FUNCTION calcular_g_caudal()
 RETURNS TRIGGER AS $$
 BEGIN
     NEW.g_caudal = ST_Buffer(NEW.g_rio, NEW.largura / 2.0, 'endcap=butt'); -- Usando 'endcap=butt'
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-
-
-
-CREATE OR REPLACE FUNCTION calcular_g_caudal()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.g_caudal = ST_Buffer(NEW.g_rio, NEW.largura / 2.0, 'endcap=butt'); -- Divisão por 2.0 para garantir resultado REAL
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;

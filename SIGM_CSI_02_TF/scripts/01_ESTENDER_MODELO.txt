@@ -205,7 +205,7 @@ $$ LANGUAGE plpgsql;
 
 -- Funções de cinemática (revisadas)
 
-CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
+/*CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
 RETURNS t_velocidade AS $$
 BEGIN
     RETURN ROW(
@@ -213,7 +213,7 @@ BEGIN
         velocidade.angular + aceleracao.angular * tempo
     )::t_velocidade;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;*/
 
 
 -- PERSEGUICAO
