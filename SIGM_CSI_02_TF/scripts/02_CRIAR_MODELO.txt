@@ -129,4 +129,107 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER tg_calcular_centro_de_massa
 BEFORE INSERT OR UPDATE OF g_objeto ON objeto -- Corrigido nome da coluna
+FOR EACH ROW EXECUTE PROCEDURE calcular_centro_de_massa();CREATE TABLE tipo_terreno (
+    id_tipo_terreno SERIAL PRIMARY KEY,
+    nome_tipo_terreno VARCHAR(255) NOT NULL,
+    percent_modif_tipo_terreno real NOT NULL 
+);
+
+CREATE TABLE terreno (
+    id_terreno SERIAL PRIMARY KEY,
+    nome_terreno VARCHAR(255) NOT NULL,
+    tipo_terreno_id INTEGER REFERENCES tipo_terreno(id_tipo_terreno),
+    g_terreno GEOMETRY(POLYGON, 3763) NOT NULL,
+    area real --trigger
+);
+
+CREATE TABLE rio (
+    id_rio SERIAL PRIMARY KEY,
+    nome_rio VARCHAR(255) NOT NULL,
+    percent_modif_rio real NOT NULL, 
+    g_rio GEOMETRY(LINESTRING, 3763) NOT NULL, 
+    largura real NOT NULL DEFAULT 1,
+    g_caudal GEOMETRY(POLYGON, 3763) NOT NULL --trigger
+);
+
+CREATE TABLE tipo_objeto (
+    id_tipo_objeto SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    max_velocidade_linear real NOT NULL,
+    max_velocidade_angular real NOT NULL,
+    max_aceleracao_linear real NOT NULL,
+    max_aceleracao_angular real NOT NULL
+);
+
+CREATE TABLE objeto (
+    id_objeto SERIAL PRIMARY KEY,
+    tipo_objeto_id INTEGER REFERENCES tipo_objeto(id_tipo_objeto),
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    g_objeto GEOMETRY(GEOMETRY, 3763), --atualiza com trajetoria
+    centro_de_massa GEOMETRY(POINT, 3763), --atualiza com g_objeto
+    velocidade t_velocidade NOT NULL DEFAULT ROW((0,0), 0)::t_velocidade, -- ADICIONADO AQUI
+    orientacao REAL NOT NULL DEFAULT 0 -- ADICIONADO AQUI
+
+);
+
+CREATE TABLE trajetoria (
+    id_trajetoria SERIAL PRIMARY KEY,
+    objeto_id INTEGER REFERENCES objeto(id_objeto),
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    posicao GEOMETRY(POINT, 3763) NOT NULL,
+    orientacao real NOT NULL,
+    velocidade_linear t_vector NOT NULL,
+    velocidade_angular real NOT NULL,
+    aceleracao_linear t_vector NOT NULL,
+    aceleracao_angular real NOT NULL
+);
+
+CREATE TABLE perseguicao (
+    id_perseguicao SERIAL PRIMARY KEY,
+    perseguidor_id INTEGER REFERENCES objeto(id_objeto),
+    alvo_id INTEGER REFERENCES objeto(id_objeto),
+    distancia real
+);
+
+CREATE INDEX idx_terreno_geo ON terreno USING GIST (g_terreno); 
+CREATE INDEX idx_rio_geo ON rio USING GIST (g_rio);      
+CREATE INDEX idx_objeto_centro_de_massa ON objeto USING GIST (centro_de_massa); 
+CREATE INDEX idx_trajetoria_posicao ON trajetoria USING GIST (posicao);
+
+-- TRIGGERS
+CREATE OR REPLACE FUNCTION calcular_area_terreno()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.area = ST_Area(NEW.g_terreno);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_calcular_area_terreno
+BEFORE INSERT OR UPDATE ON terreno
+FOR EACH ROW EXECUTE PROCEDURE calcular_area_terreno();
+
+-- Função para calcular o g_caudal
+CREATE OR REPLACE FUNCTION calcular_g_caudal()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.g_caudal = ST_Buffer(NEW.g_rio, NEW.largura / 2.0, 'endcap=butt'); -- Usando 'endcap=butt'
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_calcular_g_caudal
+BEFORE INSERT OR UPDATE OF g_rio, largura ON rio
+FOR EACH ROW EXECUTE PROCEDURE calcular_g_caudal();
+
+CREATE OR REPLACE FUNCTION calcular_centro_de_massa()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.centro_de_massa = ST_Centroid(NEW.g_objeto); -- Corrigido nome da coluna
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER tg_calcular_centro_de_massa
+BEFORE INSERT OR UPDATE OF g_objeto ON objeto -- Corrigido nome da coluna
 FOR EACH ROW EXECUTE PROCEDURE calcular_centro_de_massa();
