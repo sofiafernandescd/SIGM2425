@@ -53,49 +53,30 @@ VALUES ('Braço de Prata', ST_MakePoint(10.00, 17.00));
 SELECT * FROM geo_0d_paragem;
 
 
--- 4.d)
-DROP VIEW IF EXISTS ex4d;
-CREATE VIEW ex4d AS
-    SELECT p.nome_paragem, c.nome_carreira FROM
-     geo_0d_paragem AS p,
-     geo_1d_carreira AS c,
-     ex4a AS v
-    WHERE ST_Relate(p.geom_paragem, c.geom_carreira,'0********') 
-    AND c.nome_carreira = v.nome_carreira
-    GROUP BY p.nome_paragem, c.nome_carreira
-    ;
-
-SELECT * FROM ex4d;
-
--- 4.e)
-DROP VIEW IF EXISTS ex4e;
-CREATE VIEW ex4e AS
-    SELECT a.nome_carreira FROM
-     geo_1d_carreira AS a,
-     geo_1d_carreira AS c
-     WHERE ST_Relate(a.geom_carreira, c.geom_carreira,'1********') 
-     GROUP BY a.nome_carreira
-    ;
-
-SELECT * FROM ex4e;
--- 4.f)
-DROP VIEW IF EXISTS ex4f;
-
-CREATE VIEW ex4f AS
-SELECT c.nome_carreira, z.nome_zona FROM 
+-- 4.d) Obtenha os pontos que estão sobre as linhas contidas num dos lados de um polígono.
+SELECT p.nome_paragem, c.nome_carreira, z.nome_zona FROM 
+    geo_0d_paragem AS p,
     geo_1d_carreira AS c,
     geo_2d_zona AS z
-WHERE ST_Relate(z.geom_zona, c.geom_carreira, 'FF2101FF2');
+WHERE (ST_Relate(z.geom_zona, c.geom_carreira, 'FF2101FF2') AND ST_Relate(c.geom_carreira, p.geom_paragem, '0F1FF1FF2'));
 
-SELECT * FROM ex4f;
+-- 4.e) Obtenha todas as linhas que contêm outras linhas.
+SELECT c1.nome_carreira, c2.nome_carreira FROM 
+    geo_1d_carreira AS c1,
+    geo_1d_carreira AS c2
+WHERE ST_Relate(c1.geom_carreira, c2.geom_carreira, '101FF0FF2');
+
+-- 4.f)
+SELECT z.nome_zona, c.nome_carreira FROM 
+    geo_2d_zona AS z,
+    geo_1d_carreira AS c
+WHERE ST_Relate(z.geom_zona, c.geom_carreira, '102**1**2');
 
 -- 4.g)
 
 -- 4.h)
 
--- 4.g)
 
--- 4.h)
 
 
 --================================================
@@ -115,7 +96,7 @@ FROM
 SELECT
     p.nome_paragem, 
     c.nome_carreira, 
-    ST_Relate(p.geom_paragem, c.geom_carreira, '0FFFFF102') AS matriz_topologica
+    ST_Relate(p.geom_paragem, c.geom_carreira, '***FFF102') AS matriz_topologica
 FROM 
     geo_0d_paragem p, 
     geo_1d_carreira c;
@@ -144,10 +125,11 @@ FROM
 SELECT 
     c.nome_carreira,
     z.nome_zona,
-    ST_Relate(c.nome_carreira, z.geom_zona, '0FFFFF102') AS matriz_topologica
+    ST_Relate(c.geom_carreira, z.geom_zona, '******212') AS matriz_topologica
 FROM 
     geo_1d_carreira c,
     geo_2d_zona z;
+
 
 
 -- 5.f)

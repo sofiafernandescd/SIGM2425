@@ -23,6 +23,7 @@
 DROP TABLE IF EXISTS cinematica_hist CASCADE;
 DROP TABLE IF EXISTS pp CASCADE;
 DROP TABLE IF EXISTS cinematica CASCADE;
+DROP TABLE IF EXISTS objecto_movel CASCADE; -- Adicionado para evitar erro de referência circular
 ----------------------------------------------------
 
 CREATE TABLE cinematica(
@@ -32,13 +33,15 @@ CREATE TABLE cinematica(
     aceleracao t_aceleracao
 );
 SELECT AddGeometryColumn( '', 'cinematica', 'g_posicao', 3763, 'POINT', 2 );
+-- new
+CREATE INDEX idx_cinematica_hist_g_posicao ON cinematica_hist USING GIST (g_posicao);
 
 ----------------------------------------------------
 
 -- Regista trajectos (i.e., historico da cinematica)
 CREATE TABLE cinematica_hist(
     id_hist SERIAL PRIMARY KEY,
-    id INTEGER REFERENCES cinematica(id),
+    id INTEGER REFERENCES cinematica(id) ON DELETE CASCADE, -- Exemplo com CASCADE
     orientacao REAL,
     velocidade t_velocidade,
     aceleracao t_aceleracao
@@ -51,16 +54,31 @@ SELECT AddGeometryColumn( '', 'cinematica_hist', 'g_posicao', 3763, 'POINT', 2 )
 --__________________________________________________________________________
 DROP TABLE IF EXISTS objecto_movel;
 CREATE TABLE objecto_movel(
-id SERIAL PRIMARY KEY,
-nome VARCHAR(30),
-id_cinematica INTEGER ,
-FOREIGN KEY (id_cinematica) references cinematica(id)
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(30),
+    id_cinematica INTEGER ,
+    FOREIGN KEY (id_cinematica) references cinematica(id)
 );
 
-SELECT AddGeometryColumn( '', 'objecto_movel', 'geo', 3763, 'POLYGON', 2 );
+-- associado a cada objeto móvel existe uma “figura geométrica”
+SELECT AddGeometryColumn('', 'objecto_movel', 'geo', 3763, 'POLYGON', 2);
+CREATE INDEX idx_objecto_movel_geo ON objecto_movel USING GIST (geo);
 
 -- Suporte 'a nocao de perseguicao
-CREATE TABLE pp(
-id_perseguidor INTEGER ,
-id_alvo INTEGER
+-- CREATE TABLE pp(
+-- id_perseguidor INTEGER ,
+-- id_alvo INTEGER
 );
+
+CREATE TABLE pp(
+    id_perseguidor INTEGER REFERENCES objecto_movel(id),
+    id_alvo INTEGER REFERENCES objecto_movel(id),
+    PRIMARY KEY (id_perseguidor, id_alvo) -- Adiciona chave primária composta
+);
+
+-- Índices Espaciais: Crie índices espaciais nas colunas de geometria para melhorar o desempenho das consultas espaciais:
+CREATE INDEX idx_cinematica_g_posicao ON cinematica USING GIST (g_posicao);
+CREATE INDEX idx_cinematica_hist_g_posicao ON cinematica_hist USING GIST (g_posicao);
+CREATE INDEX idx_objecto_movel_geo ON objecto_movel USING GIST (geo);
+
+ALTER TABLE cinematica_hist ADD COLUMN instante TIMESTAMP WITH TIME ZONE;

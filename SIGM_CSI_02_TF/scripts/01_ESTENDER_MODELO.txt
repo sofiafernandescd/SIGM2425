@@ -104,7 +104,7 @@ $$ LANGUAGE plpgsql;
 -----------------
 -- Operadores
 -----------------
-/*CREATE OPERATOR * (
+CREATE OPERATOR * (
     leftarg = t_vector,
     rightarg = real,
     procedure = produto_vector_por_escalar,
@@ -116,7 +116,7 @@ CREATE OPERATOR + (
     rightarg = t_vector,
     procedure = soma_vector_vector,
     commutator = +
-);*/
+);
 
 
 ------------------------
@@ -202,3 +202,39 @@ BEGIN
     RETURN nova_velocidade;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Funções de cinemática (revisadas)
+
+CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real)
+RETURNS t_velocidade AS $$
+BEGIN
+    RETURN ROW(
+        soma_vector_vector(velocidade.linear, produto_vector_por_escalar(aceleracao.linear, tempo)),
+        velocidade.angular + aceleracao.angular * tempo
+    )::t_velocidade;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- PERSEGUICAO
+
+--______________________________________________________________________________________________
+-- Obter a nova aceleracao linear do objecto para realizar uma perseguicao
+-- Formulacao:
+-- aceleracao = normalizar( g_posicao_alvo - g_posicao_perseguidor ) * velocidade_a_perseguir
+--______________________________________________________________________________________________
+CREATE OR REPLACE FUNCTION novo_aceleracao_linear( g_posicao_perseguidor geometry,
+                                                   g_posicao_alvo geometry,
+                                                   velocidade_a_perseguir real )
+RETURNS t_vector
+AS $$
+SELECT  normalizar(((ST_X($2) - ST_X($1))::real, (ST_Y($2) - ST_Y($1))::real)) * $3 ;
+--SELECT normalizar(ST_Distance($1, $2)) * $3;
+$$ LANGUAGE sql;
+
+
+ 
+
+
+
+

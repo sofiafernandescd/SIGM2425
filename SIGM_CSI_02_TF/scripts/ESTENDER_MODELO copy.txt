@@ -1,0 +1,263 @@
+--########################################################
+--# Grupo 2, baseado nos exemplos do Professor Paulo Trigo
+--########################################################
+
+--=============
+-- Ligacao a BD
+--=============
+\set dataBase aug_real_db
+;
+\set userName postgres
+;
+\connect :dataBase :userName
+;
+--==========================
+--==========================
+
+----------------------------------------------------
+----------------------------------------------------
+-- Estender o Modelo Relacional com Novas Estruturas
+----------------------------------------------------
+----------------------------------------------------
+DROP TYPE IF EXISTS t_velocidade;
+DROP TYPE IF EXISTS t_aceleracao;
+DROP OPERATOR IF EXISTS *( t_vector, real );
+DROP OPERATOR IF EXISTS *( real, t_vector );
+DROP OPERATOR IF EXISTS +( t_vector, t_vector );
+DROP FUNCTION IF EXISTS produto_vector_por_escalar( t_vector, real );
+DROP FUNCTION IF EXISTS produto_vector_por_escalar_sql( t_vector, real );
+DROP FUNCTION IF EXISTS produto_vector_por_escalar_plgsql( t_vector, real );
+DROP FUNCTION IF EXISTS soma_vector_vector( t_vector, t_vector );
+DROP FUNCTION IF EXISTS soma_vector_vector_plpgsql( t_vector, t_vector );
+DROP FUNCTION IF EXISTS normalizar( t_vector );
+DROP FUNCTION IF EXISTS normalizar_plpgsql( t_vector );
+DROP TYPE IF EXISTS t_vector;
+----------------------------------------------------
+DROP FUNCTION IF EXISTS novo_posicao( geometry, t_velocidade, real );
+DROP FUNCTION IF EXISTS novo_orientacao( real, t_velocidade, real );
+DROP FUNCTION IF EXISTS novo_velocidade( t_velocidade, t_aceleracao, real );
+
+
+-----------------
+-- Tipos de dados
+-----------------
+CREATE TYPE t_vector AS (
+    x REAL,
+    y REAL
+);
+
+CREATE TYPE t_velocidade AS (
+    linear t_vector,
+    angular REAL
+);
+
+CREATE TYPE t_aceleracao AS (
+    linear t_vector,
+    angular REAL
+);
+
+
+-----------------
+-- Funções
+-----------------
+CREATE OR REPLACE FUNCTION produto_vector_por_escalar( vec t_vector, v real )
+RETURNS t_vector
+AS $$
+DECLARE
+    new_x real;
+    new_y real;
+BEGIN
+    new_x := vec.x * v;
+    new_y := vec.y * v;
+    RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION soma_vector_vector( vec_a t_vector, vec_b t_vector )
+RETURNS t_vector
+AS $$
+DECLARE
+  new_x real;
+  new_y real;
+BEGIN
+  new_x := vec_a.x + vec_b.x;
+  new_y := vec_a.y + vec_b.y;
+  RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION normalizar( vec t_vector )
+RETURNS t_vector
+AS $$
+DECLARE
+  norma real;
+  new_x real;
+  new_y real;
+BEGIN
+  norma := sqrt(power(vec.x, 2) + power(vec.y, 2));
+  new_x := vec.x / norma;
+  new_y := vec.y / norma;
+  RETURN (new_x, new_y);
+END;
+$$ LANGUAGE plpgsql;
+
+-----------------
+-- Operadores
+-----------------
+/*CREATE OPERATOR * (
+    leftarg = t_vector,
+    rightarg = real,
+    procedure = produto_vector_por_escalar,
+    commutator = *
+);
+
+CREATE OPERATOR + (
+    leftarg = t_vector,
+    rightarg = t_vector,
+    procedure = soma_vector_vector,
+    commutator = +
+);*/
+
+
+------------------------
+-- Funções de cinematica
+------------------------
+--____________________________________________________
+-- Obter a nova posicao do objecto no instante 'tempo'
+-- Formulacao:
+-- return g_posicao + velocidade.linear * tempo
+--____________________________________________________
+
+CREATE OR REPLACE FUNCTION novo_posicao(g_posicao geometry, velocidade t_velocidade, tempo real)
+RETURNS geometry AS $$
+SELECT ST_Translate($1, $2.linear.x * $3, $2.linear.y * $3);
+$$ LANGUAGE sql;
+
+--_______________________________________________________
+-- Obter a nova orientacao do objecto no instante 'tempo'
+-- Formulacao:
+-- return orientacao + velocidade.angular * tempo
+--_______________________________________________________
+CREATE OR REPLACE FUNCTION novo_orientacao(orientacao real, velocidade t_velocidade, tempo real) -- Corrigido para REAL
+RETURNS real AS $$
+SELECT $1 + $2.angular * $3;
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION novo_velocidade(velocidade t_velocidade, aceleracao t_aceleracao, tempo real, max_velocidade_linear REAL, max_velocidade_angular REAL)
+RETURNS t_velocidade AS $$
+DECLARE
+    nova_velocidade t_velocidade;
+    nova_velocidade_linear t_vector;
+BEGIN
+    nova_velocidade_linear := soma_vector_vector(velocidade.linear, produto_vector_por_escalar(aceleracao.linear, tempo));
+
+    -- Calcula o módulo (magnitude) do vetor velocidade linear
+    IF sqrt(nova_velocidade_linear.x^2 + nova_velocidade_linear.y^2) > max_velocidade_linear THEN
+        -- Normaliza o vetor e multiplica pela velocidade máxima
+        nova_velocidade_linear := produto_vector_por_escalar(normalizar(nova_velocidade_linear), max_velocidade_linear);
+    END IF;
+
+    nova_velocidade.angular := velocidade.angular + aceleracao.angular * tempo;
+    IF abs(nova_velocidade.angular) > max_velocidade_angular THEN
+        nova_velocidade.angular := SIGN(nova_velocidade.angular) * max_velocidade_angular; -- Mantém o sinal
+    END IF;
+
+    nova_velocidade.linear := nova_velocidade_linear;
+    RETURN nova_velocidade;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Funções de perseguição (revisadas)
+CREATE OR REPLACE FUNCTION novo_aceleracao_linear(g_posicao_perseguidor geometry, g_posicao_alvo geometry, velocidade_a_perseguir real)
+RETURNS t_vector AS $$
+SELECT normalizar(ROW(ST_X($2) - ST_X($1), ST_Y($2) - ST_Y($1))::t_vector) * $3;
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION obter_aceleracao_perseguidor(id_perseguidor int, id_alvo int, velocidade_a_perseguir real)
+RETURNS t_aceleracao AS $$
+DECLARE
+    nova_aceleracao_linear t_vector;
+    aceleracao_angular REAL;
+BEGIN
+    SELECT novo_aceleracao_linear(t1.posicao, t2.posicao, $3), o1.aceleracao.angular
+    INTO nova_aceleracao_linear, aceleracao_angular
+    FROM trajetoria t1
+    JOIN objeto o1 ON t1.objeto_id = o1.id_objeto
+    JOIN trajetoria t2 ON t2.objeto_id = $2
+    ORDER BY t1.timestamp DESC, t2.timestamp DESC
+    LIMIT 1;
+
+    RETURN ROW(nova_aceleracao_linear, aceleracao_angular)::t_aceleracao;
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- Loop de simulação (revisado e completo)
+DO $$
+DECLARE
+    objeto_id INTEGER := 1;
+    alvo_id INTEGER := 2; -- ID do objeto alvo
+    tempo REAL := 0.1;
+    velocidade objeto.velocidade%TYPE;
+    aceleracao objeto.aceleracao%TYPE;
+    orientacao objeto.orientacao%TYPE;
+    tipo_objeto_id objeto.tipo_objeto_id%TYPE;
+    max_velocidade_linear tipo_objeto.max_velocidade_linear%TYPE;
+    max_velocidade_angular tipo_objeto.max_velocidade_angular%TYPE;
+    max_aceleracao_linear tipo_objeto.max_aceleracao_linear%TYPE;
+    max_aceleracao_angular tipo_objeto.max_aceleracao_angular%TYPE;
+    nova_aceleracao t_aceleracao;
+    nova_posicao geometry;
+BEGIN
+    -- Obter o estado atual do objeto
+    SELECT velocidade, aceleracao, orientacao, tipo_objeto_id
+    INTO velocidade, aceleracao, orientacao, tipo_objeto_id
+    FROM objeto
+    WHERE id_objeto = objeto_id;
+
+    -- Obter os valores máximos do tipo de objeto
+    SELECT max_velocidade_linear, max_velocidade_angular, max_aceleracao_linear, max_aceleracao_angular
+    INTO max_velocidade_linear, max_velocidade_angular, max_aceleracao_linear, max_aceleracao_angular
+    FROM tipo_objeto
+    WHERE id_tipo_objeto = tipo_objeto_id;
+
+
+    -- *** CÁLCULO DA NOVA ACELERAÇÃO (PERSEGUIÇÃO) ***
+    nova_aceleracao := obter_aceleracao_perseguidor(objeto_id, alvo_id, 2); -- objeto_id persegue alvo_id com velocidade 2
+
+    -- Limitar a aceleração linear
+    IF sqrt(nova_aceleracao.linear.x^2 + nova_aceleracao.linear.y^2) > max_aceleracao_linear THEN
+        nova_aceleracao.linear := produto_vector_por_escalar(normalizar(nova_aceleracao.linear), max_aceleracao_linear);
+    END IF;
+
+    -- Limitar a aceleração angular
+    IF abs(nova_aceleracao.angular) > max_aceleracao_angular THEN
+        nova_aceleracao.angular := SIGN(nova_aceleracao.angular) * max_aceleracao_angular;
+    END IF;
+    
+    -- Atualizar a tabela objeto com a aceleração LIMITADA
+    UPDATE objeto
+    SET aceleracao = nova_aceleracao
+    WHERE id_objeto = objeto_id;
+
+    -- Atualiza velocidade e orientação
+    UPDATE objeto
+    SET velocidade = novo_velocidade(velocidade, nova_aceleracao, tempo, max_velocidade_linear, max_velocidade_angular),
+        orientacao = novo_orientacao(orientacao, velocidade, tempo)
+    WHERE id_objeto = objeto_id
+    RETURNING velocidade, orientacao INTO velocidade, orientacao;
+
+    -- Obtém a posição anterior e calcula a nova posição (usando o objeto diretamente, sem LATERAL JOIN desnecessário)
+    SELECT novo_posicao(posicao, velocidade, tempo)
+    INTO nova_posicao
+    FROM trajetoria
+    WHERE objeto_id = objeto_id
+    ORDER BY timestamp DESC
+    LIMIT 1;
+
+    -- Insere nova posição na tabela trajetoria
+    INSERT INTO trajetoria (objeto_id, timestamp, posicao)
+    VALUES (objeto_id, clock_timestamp(), nova_posicao);
+
+END $$;

@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS objecto_movel;
 CREATE TABLE objecto_movel(
 id SERIAL PRIMARY KEY,
 nome VARCHAR(30),
-id_cinematica INTEGER ,
+id_cinematica INTEGER , 
 FOREIGN KEY (id_cinematica) references cinematica(id)
 );
 

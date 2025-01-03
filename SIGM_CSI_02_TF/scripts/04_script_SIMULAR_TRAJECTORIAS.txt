@@ -15,7 +15,41 @@
 --==========================
 --==========================
 
+UPDATE objeto
+SET velocidade = novo_velocidade(velocidade, aceleracao, tempo),
+    orientacao = novo_orientacao(orientacao, velocidade, tempo)
+WHERE id_objeto = objeto_id;
 
+
+INSERT INTO trajetoria (objeto_id, timestamp, posicao)
+VALUES (objeto_id, NOW(), novo_posicao(
+    (SELECT posicao FROM trajetoria WHERE objeto_id = objeto_id ORDER BY timestamp DESC LIMIT 1), -- Posição anterior
+    (SELECT velocidade FROM objeto WHERE id_objeto = objeto_id), -- Velocidade atualizada
+    tempo
+));
+
+-- (Seus tipos de dados, funções de vetores e funções de cinemática já definidos)
+
+-- Exemplo de uso dentro de um bloco PL/pgSQL (para simular um "loop" de atualização):
+DO $$
+DECLARE
+    objeto_id INTEGER := 1; -- Substitua pelo ID do seu objeto
+    tempo real := 0.1;      -- Intervalo de tempo entre as atualizações
+BEGIN
+    -- Atualiza velocidade e orientação na tabela objeto
+    UPDATE objeto
+    SET velocidade = novo_velocidade(velocidade, aceleracao, tempo),
+        orientacao = novo_orientacao(orientacao, velocidade, tempo)
+    WHERE id_objeto = objeto_id;
+
+    -- Insere nova posição na tabela trajetoria
+    INSERT INTO trajetoria (objeto_id, timestamp, posicao)
+    VALUES (objeto_id, NOW(), novo_posicao(
+        (SELECT posicao FROM trajetoria WHERE objeto_id = objeto_id ORDER BY timestamp DESC LIMIT 1),
+        (SELECT velocidade FROM objeto WHERE id_objeto = objeto_id),
+        tempo
+    ));
+END $$;
 -----------------------------
 -----------------------------
 -- Simulacao de trajectorias:
